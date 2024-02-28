@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
+const bycrypt = require('bcryptjs');
 
 const registerUser = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
@@ -17,22 +18,46 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error('User already exists');
   }
 
-  const createdUser = await User.create({ username, password });
+  // Hash password
+  const salt = await bycrypt.genSalt(10);
+  const hashedPassword = await bycrypt.hash(password, salt);
+
+  const createdUser = await User.create({ username, password: hashedPassword });
   if (createdUser) {
-    const token = generateToken(createdUser._id);
-    res.cookie('token', token).status(201).json({ _id: createdUser._id });
+    const token = generateToken(createdUser._id, username);
+    res
+      .cookie('token', token, { sameSite: 'none' })
+      .status(201)
+      .json({ id: createdUser._id });
   } else {
     res.status(401);
     throw new Error('Invalid username or password');
   }
 });
 
-function generateToken(id) {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+// Get user profile
+const getProfile = asyncHandler(async (req, res) => {
+  try {
+    const { token } = req?.cookies;
+
+    if (token) {
+      const userData = jwt.verify(token, process.env.JWT_SECRET);
+      res.json(userData);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(401);
+    throw new Error('Not logged in');
+  }
+});
+
+function generateToken(id, username) {
+  return jwt.sign({ id, username }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 }
 
 module.exports = {
   registerUser,
+  getProfile,
 };

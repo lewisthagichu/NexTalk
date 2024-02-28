@@ -1,5 +1,8 @@
-import { useState } from "react"
-import axios from "axios"
+import { useState, useEffect } from "react"
+import {useDispatch, useSelector} from 'react-redux'
+import { toast } from "react-toastify"
+import { useNavigate } from "react-router-dom"
+import { reset, register } from "../features/auth/authSlice"
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -7,7 +10,20 @@ function Register() {
         password: "",
     })
     const {username, password} = formData
+    const {user, isSuccess, isLoading, isError, message} = useSelector(state => state.auth)
 
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+
+    useEffect(()=> {
+        if (isError) toast.error(message)
+
+        if (isSuccess || user) {
+            navigate('/')
+        }
+
+        dispatch(reset())
+    }, [user, isError, isSuccess, message, navigate, dispatch])
 
     function handleChange(event) {
         const {name, value} = event.target
@@ -21,14 +37,9 @@ function Register() {
 
     async function handleSubmit(event) {
         event.preventDefault()
-        try {
-            const response = await axios.post('/register', { username, password });
-            // Handle successful response if needed
-            console.log(response.data);
-        } catch (error) {
-            // Handle error
-            console.error("Registration failed", error.response.data);
-        }
+        
+        const userData = {username, password}
+        dispatch(register(userData))
     }
 
     return (

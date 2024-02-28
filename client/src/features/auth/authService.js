@@ -1,0 +1,14 @@
+import axios from 'axios';
+
+const API_URL = '/api/user/';
+
+const register = async (userData) => {
+  const { data } = await axios.post(API_URL, userData);
+  return data;
+};
+
+const authService = {
+  register,
+};
+
+export default authService;
