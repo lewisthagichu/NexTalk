@@ -25,31 +25,25 @@ const registerUser = asyncHandler(async (req, res) => {
   const createdUser = await User.create({ username, password: hashedPassword });
   if (createdUser) {
     const token = generateToken(createdUser._id, username);
-    res
-      .cookie('token', token, { sameSite: 'none' })
-      .status(201)
-      .json({ id: createdUser._id });
+    res.status(201).json({ id: createdUser._id, token });
   } else {
     res.status(401);
     throw new Error('Invalid username or password');
   }
 });
 
-// Get user profile
-const getProfile = asyncHandler(async (req, res) => {
-  try {
-    const { token } = req?.cookies;
+// // Get user profile
+// const getProfile = asyncHandler(async (req, res) => {
+//   const { token } = req?.cookies;
 
-    if (token) {
-      const userData = jwt.verify(token, process.env.JWT_SECRET);
-      res.json(userData);
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(401);
-    throw new Error('Not logged in');
-  }
-});
+//   if (token) {
+//     const userData = jwt.verify(token, process.env.JWT_SECRET);
+//     res.json(userData);
+//   } else {
+//     res.status(401);
+//     throw new Error('Register or login');
+//   }
+// });
 
 function generateToken(id, username) {
   return jwt.sign({ id, username }, process.env.JWT_SECRET, {
@@ -59,5 +53,4 @@ function generateToken(id, username) {
 
 module.exports = {
   registerUser,
-  getProfile,
 };
