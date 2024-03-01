@@ -3,7 +3,8 @@ import {ToastContainer} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
 import Register from "./pages/Register"
-import Chat from './pages/Chat'
+import Login from './pages/Login'
+import Profile from './pages/Profile'
 
 function App() {
   axios.defaults.baseURL = "http://localhost:5000"
@@ -11,9 +12,10 @@ function App() {
   return (
     <>
     <Router>
-      <Routes>
-        <Route path='/' element={<Chat />}/>
-        <Route path='/register' element={<Register />}/>
+      <Routes>        
+        <Route path='/register' element={<Register />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/' element={<Profile />} />
       </Routes>
     </Router>
     <ToastContainer />      

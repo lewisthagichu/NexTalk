@@ -2,9 +2,9 @@ import { useState, useEffect } from "react"
 import {useDispatch, useSelector} from 'react-redux'
 import { toast } from "react-toastify"
 import { useNavigate } from "react-router-dom"
-import { reset, register } from "../features/auth/authSlice"
+import { reset, login } from "../features/auth/authSlice"
 
-function Register() {
+function Login() {
     const [formData, setFormData] = useState({
         username: "",
         password: "",
@@ -39,7 +39,7 @@ function Register() {
         event.preventDefault()
         
         const userData = {username, password}
-        dispatch(register(userData)) 
+        dispatch(login(userData)) 
     }
 
     return (
@@ -62,17 +62,17 @@ function Register() {
             className="block w-full rounded-sm p-2 mb-2 border" />
 
             <button className="bg-blue-500 text-white block w-full rounded-sm p-2">
-                Register
+                Login
             </button>
 
-            <div className="text-center mt-2">            
+            <div className="text-center mt-2">
                 <div>
-                Already a member?
+                Dont have an account?
                 <button 
                     type="button" 
                     className="ml-1" 
-                    onClick={() => navigate('../login')}
-                    >Login here</button>
+                    onClick={() => navigate('../register')}
+                    >Register</button>
                 </div>
             </div>
         </form>
@@ -81,4 +81,4 @@ function Register() {
     )
   }
   
-  export default Register
+  export default Login
