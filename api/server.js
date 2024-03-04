@@ -6,6 +6,7 @@ const http = require('http');
 const socketio = require('socket.io');
 const cookieParser = require('cookie-parser');
 const { errorHandler } = require('./middleware/errorMiddleware');
+const { socketMiddleware } = require('./middleware/socketMiddleware');
 const connectDB = require('./config/db');
 
 // Connect to the database
@@ -47,7 +48,12 @@ const io = socketio(server, {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 
-//  Set up a connection event for SocketIO
-io.on('connection', (socket) => {
-  console.log('connection established');
+// Set up middleware for Socket.IO connections
+io.use((socket, next) => {
+  if (socketMiddleware(socket, next)) {
+    next();
+  }
 });
+
+//  Set up a connection event for SocketIO
+io.on('connection', (socket) => {});

@@ -11,20 +11,31 @@ function Profile() {
 
   const {user, isError, message} = useSelector(state => state.auth)
 
+  useEffect(() => {
+    if (isError) {
+        console.log(message);
+    }
+
+    if (!user) {
+        navigate('/register');
+    }
+}, [isError, message, user, navigate])
+
   useEffect(()=> {
-    const socket = io.connect('http://localhost:5000')
-    setSocket(socket)
+    const {token} = user
+  
+    const socket = io.connect('http://localhost:5000', { 
+      auth: {
+        token
+      }})
+
+      return () => {
+        socket.disconnect()
+      }
+
   }, [])
 
-  useEffect(() => {
-      if (isError) {
-          console.log(message);
-      }
 
-      if (!user) {
-          navigate('/register');
-      }
-  }, [isError, message, user, navigate])
 
   return (
     <div className="flex h-screen">

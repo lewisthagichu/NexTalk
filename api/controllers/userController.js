@@ -28,7 +28,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // Server response
   if (createdUser) {
-    const token = generateToken(createdUser._id);
+    const token = generateToken(createdUser._id, createdUser.username);
     res.status(201).json({ id: createdUser._id, username, token });
   } else {
     res.status(401);
@@ -48,7 +48,11 @@ const loginUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({ username });
 
   if (user && bycrypt.compare(user.password, password)) {
-    res.status(201).json({ id: user.id, username });
+    res.status(201).json({
+      id: user.id,
+      username,
+      token: generateToken(user._id, user.username),
+    });
   } else {
     res.status(401);
     throw new Error('Invalid credentials');
@@ -65,8 +69,8 @@ const getProfile = asyncHandler(async (req, res) => {
   }
 });
 
-function generateToken(id) {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+function generateToken(id, username) {
+  return jwt.sign({ id, username }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 }
