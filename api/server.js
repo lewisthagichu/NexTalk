@@ -2,19 +2,25 @@ const express = require('express');
 const dotenv = require('dotenv').config();
 const colors = require('colors');
 const cors = require('cors');
+const http = require('http');
+const socketio = require('socket.io');
 const cookieParser = require('cookie-parser');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const connectDB = require('./config/db');
 
+// Connect to the database
 connectDB();
+
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 // / Middleware to use body data (raw json)
 app.use(express.json());
+
 // Middleware to use body data (url encoded)
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// CORS middleware
 app.use(
   cors({
     credentials: true,
@@ -24,7 +30,24 @@ app.use(
   })
 );
 
+// Routes
 app.use('/api/user', require('./routes/userRoute'));
+
+// Error handler middleware
 app.use(errorHandler);
 
-app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+const server = http.createServer(app);
+const io = socketio(server, {
+  cors: {
+    origin: process.env.CLIENT_URL,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  },
+});
+
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+
+//  Set up a connection event for SocketIO
+io.on('connection', (socket) => {
+  console.log('connection established');
+});

@@ -1,21 +1,31 @@
+/* eslint-disable react/no-unknown-property */
 import { useDispatch, useSelector } from "react-redux"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import io from 'socket.io-client'
 
 function Profile() {
-    const dispatch = useDispatch()
-    const navigate = useNavigate()
-    const {user, isLoading, isSuccess, isError, message} = useSelector(state => state.auth)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const [socket,setSocket] = useState(null)
 
-    useEffect(() => {
-        if (isError) {
-           console.log(message);
-        }
+  const {user, isError, message} = useSelector(state => state.auth)
 
-        if (!user) {
-            navigate('/register');
-        }
-    }, [isError, message, user, navigate])
+  useEffect(()=> {
+    const socket = io.connect('http://localhost:5000')
+    setSocket(socket)
+  }, [])
+
+  useEffect(() => {
+      if (isError) {
+          console.log(message);
+      }
+
+      if (!user) {
+          navigate('/register');
+      }
+  }, [isError, message, user, navigate])
+
   return (
     <div className="flex h-screen">
       <div className="bg-white w-1/3">contacts</div>
