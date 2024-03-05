@@ -42,6 +42,10 @@ function Register() {
         dispatch(register(userData)) 
     }
 
+    if (isLoading) {
+        return <div>Loading...</div>;
+      }
+
     return (
       <div className="bg-blue-50 h-screen flex items-center">
         <form onSubmit={handleSubmit} className="w-64 mx-auto mb-12" >

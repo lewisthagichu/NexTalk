@@ -7,7 +7,9 @@ const socketio = require('socket.io');
 const cookieParser = require('cookie-parser');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const { socketMiddleware } = require('./middleware/socketMiddleware');
+const { userJoin, getUsers, userLeave } = require('./utils/connectedUsers');
 const connectDB = require('./config/db');
+const { log } = require('console');
 
 // Connect to the database
 connectDB();
@@ -56,4 +58,13 @@ io.use((socket, next) => {
 });
 
 //  Set up a connection event for SocketIO
-io.on('connection', (socket) => {});
+io.on('connection', (socket) => {
+  const user = userJoin(socket.userId, socket.username);
+
+  // Send active users
+  io.emit('activeUsers', { users: getUsers() });
+
+  socket.on('disconnect', () => {
+    userLeave(socket.userId);
+  });
+});

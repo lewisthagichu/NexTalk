@@ -7,7 +7,8 @@ import io from 'socket.io-client'
 function Profile() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const [socket,setSocket] = useState(null)
+  const [newSocket,setNewSocket] = useState(null)
+  const [activeUsers, setActiveUsers] = useState([])
 
   const {user, isError, message} = useSelector(state => state.auth)
 
@@ -19,23 +20,44 @@ function Profile() {
     if (!user) {
         navigate('/register');
     }
-}, [isError, message, user, navigate])
+  }, [isError, message, user, navigate])
 
   useEffect(()=> {
-    const {token} = user
-  
-    const socket = io.connect('http://localhost:5000', { 
-      auth: {
-        token
-      }})
+    // Proceed with the rest of the component logic only if the user is authenticated
+    if (user) {
+      const { token } = user;
 
+      // Connect socket with authentication token
+      const socket = io.connect("http://localhost:5000", {
+        auth: {
+          token,
+        },
+      });
+
+      setNewSocket(socket);
+
+      // Receive active users
+      socket.on('activeUsers', ({ users }) => {
+        showActiveUsers(users)
+      });      
+
+      // Cleanup socket connection on component unmount
       return () => {
         socket.disconnect()
       }
-
+    }
   }, [])
 
+  function showActiveUsers(users) {
+    if (users) {
+      // Find unique active users
+      const uniqueUsers = Array.from(new Set(users.map(obj => obj.id)))
+      .map(id => users.find(obj => obj.id === id));
 
+      setActiveUsers(uniqueUsers);
+
+    }
+  }
 
   return (
     <div className="flex h-screen">
