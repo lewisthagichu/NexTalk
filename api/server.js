@@ -61,6 +61,11 @@ io.use((socket, next) => {
 io.on('connection', (socket) => {
   const user = userJoin(socket.userId, socket.username);
 
+  // Receive text message from client
+  socket.on('textMessage', (message) => {
+    console.log(message);
+  });
+
   // Send active users
   io.emit('activeUsers', { users: getUsers() });
 
