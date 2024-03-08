@@ -7,9 +7,10 @@ const socketio = require('socket.io');
 const cookieParser = require('cookie-parser');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const { socketMiddleware } = require('./middleware/socketMiddleware');
+const Message = require('./models/messageModel');
 const { userJoin, getUsers, userLeave } = require('./utils/connectedUsers');
+const { deleteAll } = require('./utils/clearDB');
 const connectDB = require('./config/db');
-const { log } = require('console');
 
 // Connect to the database
 connectDB();
@@ -61,12 +62,26 @@ io.use((socket, next) => {
 io.on('connection', (socket) => {
   const user = userJoin(socket.userId, socket.username);
 
-  // Receive text message from client
-  socket.on('textMessage', (message) => {
-    console.log(message);
+  socket.on('joinRoom', (roomName) => {
+    socket.join(roomName);
   });
 
-  // Send active users
+  // Receive new text message from client
+  socket.on('newMessage', async (messageData) => {
+    // Destructure messageData properties
+    const { roomName, sender, recipient, text } = messageData;
+    console.log(messageData);
+
+    if (roomName && text) {
+      // Create new message in DB
+      const messageDoc = await Message.create({ sender, recipient, text });
+
+      // Return message to client
+      io.to(roomName).emit('message', messageData);
+    }
+  });
+
+  // Send users to everyone connected
   io.emit('activeUsers', { users: getUsers() });
 
   socket.on('disconnect', () => {

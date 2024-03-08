@@ -1,9 +1,10 @@
 /* eslint-disable react/no-unknown-property */
 import { useDispatch, useSelector } from "react-redux"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import io from 'socket.io-client'
 import { FaRocketchat } from "react-icons/fa6"
+import {uniqBy} from 'lodash'
+import io from 'socket.io-client'
 import Avatar from "../components/Avatar"
 
 function Profile() {
@@ -12,7 +13,10 @@ function Profile() {
   const [socket,setSocket] = useState(null)
   const [activeUsers, setActiveUsers] = useState([])
   const [selectedUserId, setSelectedUserId] = useState(null)
-  const [textMessage, setTextMessage] = useState(null)
+  const [newMessage, setNewMessage] = useState('')
+  const [messages, setMessages] = useState([])
+  const inputRef = useRef()
+  const divRef = useRef()
 
   const {user, isError, message} = useSelector(state => state.auth)
 
@@ -43,14 +47,27 @@ function Profile() {
       // Receive active users
       socket.on('activeUsers', ({ users }) => {
         showActiveUsers(users)
-      });      
+      }); 
 
+      // Receive message
+      socket.on('message', (messageData) => {
+        setMessages(prev => ([...prev, {...messageData}]))
+      })
+      
       // Cleanup socket connection on component unmount
       return () => {
         socket.disconnect()
       }
     }
   }, [])
+
+  useEffect(() => {
+    const div = divRef.current
+
+    if (div) {
+      div.scrollTop = div.scrollHeight
+    }
+  }, [messages])
 
   // Display connected users
   function showActiveUsers(users) {
@@ -67,14 +84,56 @@ function Profile() {
     }
   }
 
+  // Generate room name
+  function generateUniqueRoomName(id1, id2) {
+    // Sort the IDs alphabetically
+    const sortedIds = [id1, id2].sort();
+  
+    // Concatenate the sorted IDs to create a unique room name
+    const roomName = sortedIds.join('-');
+  
+    return roomName;
+  }
+
+  // Joint room with selected user/contact
+  function joinRoom(userId) {
+    setSelectedUserId(userId);
+
+    const roomName = generateUniqueRoomName(user.id, userId)
+
+    socket.emit('joinRoom', roomName)
+  }
+
   // Handlesubmit
   function handleSubmit(e) {
     e.preventDefault();
 
-    // Send text to server
-    socket.emit('textMessage', {recipient: selectedUserId, textMessage})
+    // Focus on the input element when the message's sent
+    inputRef.current.focus()
 
+    const roomName = generateUniqueRoomName(selectedUserId, user.id)
+    
+    // Message data
+    const messageData = {
+      id: Date.now(),
+      sender: user.id,
+      recipient: selectedUserId,
+      text: newMessage
+    }
+
+
+    // Send text to server
+    socket.emit('newMessage', {roomName, ...messageData})
+
+    // Update messages array
+    setMessages(prev => ([...prev, {...messageData}]))
+
+    // Clear newMessage state
+    setNewMessage('')
   }
+
+  // Remove duplicate messages
+  const uniqueMessages = uniqBy(messages, 'id')
 
   return (
     <div className="flex h-screen">
@@ -84,7 +143,7 @@ function Profile() {
 
         {/* Display active users */}
         {activeUsers.map(user => (
-          <div onClick={() => setSelectedUserId(user.id)} 
+          <div onClick={() => joinRoom(user.id)} 
             key={user.id} 
             className={`border-b border-gray-100 py-2 pl-4 flex items-center gap-2 cursor-pointer ${user.id === selectedUserId ? 'bg-blue-50' : ''}`} >
             <Avatar userId={user.id} username={user.username} online={true}/>
@@ -93,12 +152,24 @@ function Profile() {
         ))}
       </div>
 
-      <div className="bg-blue-100 w-2/3 p-2 flex flex-col">
+      <div className="bg-blue-100 w-2/3 p-2 flex flex-col" style={{ minWidth: '500px'}}>
         <div className="flex-grow">
           {!selectedUserId && (
             <div className="flex h-full flex-grow items-center justify-center">
               <div className="text-gray-300">&larr; Select a contact to start conversng</div>
             </div>
+          )}
+          {!!selectedUserId && (
+            <div  className="relative h-full">
+              <div ref={divRef} className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2">
+              {uniqueMessages.map(message => (
+                <div key={message.id} className={message.sender === user.id ? 'text-right' : 'text-left'} >
+                  <div className={"text-left inline-block p-2 my-2 mx-8 rounded-md text-sm " +(message.sender === user.id ? 'bg-blue-500 text-white':'bg-white text-gray-500')} style={{ minWidth: '50px', maxWidth: '300px', wordWrap: 'break-word' }}>{message.text}</div>
+                </div>
+              ))}
+              </div>
+            </div>
+            
           )}
         </div>
 
@@ -106,8 +177,9 @@ function Profile() {
           <form onSubmit={handleSubmit} className="flex gap-2">
             <input 
               type="text"
-              value={textMessage}
-              onChange={(e) => setTextMessage(e.target.value)}
+              value={newMessage}
+              ref={inputRef}
+              onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type your message here"
               className="bg-white flex-grow border rounded-sm p-2"/>
             <button className="bg-blue-500 p-2 text-white rounded-sm">
