@@ -35,7 +35,8 @@ app.use(
 );
 
 // Routes
-app.use('/api/user', require('./routes/userRoute'));
+app.use('/api/users', require('./routes/userRoute'));
+app.use('/api/messages', require('./routes/messageRoute'));
 
 // Error handler middleware
 app.use(errorHandler);
