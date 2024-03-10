@@ -9,7 +9,14 @@ const createMessage = asyncHandler(async (req, res) => {
     throw new Error('Empty message');
   }
 
+  res.json({ message: 'success' });
+
   console.log(req.body);
 });
 
-module.exports = { createMessage };
+// @desc Get messages
+// @route POST /api/messages/:id
+// @access Private
+const getMessages = asyncHandler(async (req, res) => {});
+
+module.exports = { createMessage, getMessages };

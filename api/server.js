@@ -68,14 +68,14 @@ io.on('connection', (socket) => {
   });
 
   // Receive new text message from client
-  socket.on('newMessage', async (messageData) => {
+  socket.on('newMessage', async ({ roomName, messageData }) => {
     // Destructure messageData properties
-    const { roomName, sender, recipient, text } = messageData;
-    console.log(messageData);
+    const { sender, recipient, text } = messageData;
 
     if (roomName && text) {
       // Create new message in DB
       const messageDoc = await Message.create({ sender, recipient, text });
+      console.log(messageDoc._id);
 
       // Return message to client
       io.to(roomName).emit('message', messageData);

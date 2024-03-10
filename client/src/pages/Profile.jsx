@@ -6,6 +6,7 @@ import { FaRocketchat } from "react-icons/fa6"
 import {uniqBy} from 'lodash'
 import io from 'socket.io-client'
 import Avatar from "../components/Avatar"
+import { createMessage } from "../features/messages/messagesSlice"
 
 function Profile() {
   const dispatch = useDispatch()
@@ -14,17 +15,15 @@ function Profile() {
   const [activeUsers, setActiveUsers] = useState([])
   const [selectedUserId, setSelectedUserId] = useState(null)
   const [newMessage, setNewMessage] = useState('')
-  const [messages, setMessages] = useState([])
+  // const [messages, setMessages] = useState([])
   const inputRef = useRef()
   const divRef = useRef()
 
-  const {user, isError, message} = useSelector(state => state.auth)
+  const {user} = useSelector(state => state.auth)
+  const {messages, isLoadng, isError, message} = useSelector(state => state.messages)
 
-  useEffect(() => {
-    if (isError) {
-        console.log(message);
-    }
-
+  // Check if user is authorized
+  useEffect(() => {  
     if (!user) {
         navigate('/register');
     }
@@ -51,7 +50,7 @@ function Profile() {
 
       // Receive message
       socket.on('message', (messageData) => {
-        setMessages(prev => ([...prev, {...messageData}]))
+        // dispatch(createMessage(messageData));
       })
       
       // Cleanup socket connection on component unmount
@@ -61,6 +60,7 @@ function Profile() {
     }
   }, [])
 
+  // Auto scroll conversation container
   useEffect(() => {
     const div = divRef.current
 
@@ -123,10 +123,11 @@ function Profile() {
 
 
     // Send text to server
-    socket.emit('newMessage', {roomName, ...messageData})
+    socket.emit('newMessage', {roomName, messageData})
 
     // Update messages array
-    setMessages(prev => ([...prev, {...messageData}]))
+    dispatch(createMessage(messageData))
+    // setMessages(prev => ([...prev, {...messageData}]))
 
     // Clear newMessage state
     setNewMessage('')

@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import messagesService from './messagesService';
 
 const initialState = {
   messages: [],
@@ -9,11 +10,12 @@ const initialState = {
 };
 
 // Create/send new message
-const createMessage = createAsyncThunk(
-  'message/create',
+export const createMessage = createAsyncThunk(
+  'messages/create',
   async (messageData, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
+      return messagesService.createMessage(messageData, token);
     } catch (error) {
       const message =
         (error.response &&
@@ -26,13 +28,28 @@ const createMessage = createAsyncThunk(
   }
 );
 
-const messagesSlice = createSlice({
+export const messagesSlice = createSlice({
   name: 'messages',
   initialState,
   reducers: {
     reset: (state) => initialState,
   },
-  extraReducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(createMessage.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(createMessage.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.goals.push(action.payload);
+      })
+      .addCase(createMessage.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      });
+  },
 });
 
 export const { reset } = messagesSlice.actions;
