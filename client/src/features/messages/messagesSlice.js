@@ -28,6 +28,25 @@ export const createMessage = createAsyncThunk(
   }
 );
 
+// Get all messages for selected user
+export const getMessages = createAsyncThunk(
+  'messages/getAll',
+  async (selectedUserId, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.user.token;
+      return messagesService.getMessages(selectedUserId, token);
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const messagesSlice = createSlice({
   name: 'messages',
   initialState,
@@ -42,12 +61,25 @@ export const messagesSlice = createSlice({
       .addCase(createMessage.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.goals.push(action.payload);
+        state.messages.push(action.payload);
       })
       .addCase(createMessage.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
-        state.message = action.payload;
+        state.serverMessage = action.payload;
+      })
+      .addCase(getMessages.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getMessages.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.messages = action.payload;
+      })
+      .addCase(getMessages.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.serverMessage = action.payload;
       });
   },
 });

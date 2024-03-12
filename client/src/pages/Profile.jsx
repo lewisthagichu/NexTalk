@@ -2,11 +2,11 @@
 import { useDispatch, useSelector } from "react-redux"
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { FaRocketchat } from "react-icons/fa6"
+import { FaRocketchat, FaUber } from "react-icons/fa6"
 import {uniqBy} from 'lodash'
 import io from 'socket.io-client'
 import Avatar from "../components/Avatar"
-import { createMessage } from "../features/messages/messagesSlice"
+import { createMessage, getMessages, reset } from "../features/messages/messagesSlice"
 
 function Profile() {
   const dispatch = useDispatch()
@@ -15,6 +15,7 @@ function Profile() {
   const [activeUsers, setActiveUsers] = useState([])
   const [selectedUserId, setSelectedUserId] = useState(null)
   const [newMessage, setNewMessage] = useState('')
+  const [currentRoom, setCurrentRoom] = useState(null)
   // const [messages, setMessages] = useState([])
   const inputRef = useRef()
   const divRef = useRef()
@@ -27,13 +28,21 @@ function Profile() {
     if (!user) {
         navigate('/register');
     }
-  }, [isError, message, user, navigate])
+  }, [ user, navigate])
+
 
   useEffect(()=> {
     // Proceed with the rest of the component logic only if the user is authenticated
     if (user) {
-      const { token } = user;
-
+      // Make a socket connection
+      connectSocket()
+  }
+  }, [])
+  
+  // Connect to server
+  function connectSocket() {
+    const { token } = user;
+  
       // Connect socket with authentication token
       const socket = io.connect("http://localhost:5000", {
         auth: {
@@ -43,22 +52,25 @@ function Profile() {
 
       setSocket(socket);
 
-      // Receive active users
-      socket.on('activeUsers', ({ users }) => {
-        showActiveUsers(users)
+      // Receive active/connected users
+      socket.on('activeUsers', ({ connectedUsers }) => {
+        updateActiveUsers(connectedUsers)
       }); 
 
       // Receive message
-      socket.on('message', (messageData) => {
-        // dispatch(createMessage(messageData));
+      socket.on('message', ({roomName, messageData}) => {
+        if (currentRoom === roomName) {
+        dispatch(createMessage(messageData));
+        }
       })
-      
-      // Cleanup socket connection on component unmount
-      return () => {
-        socket.disconnect()
-      }
-    }
-  }, [])
+
+      // Try reconnecting incase of a disconnect
+      socket.on('disconnect', () => {
+        setTimeout(() => {
+          connectSocket()
+        }, 1000);
+      })      
+  }
 
   // Auto scroll conversation container
   useEffect(() => {
@@ -69,8 +81,17 @@ function Profile() {
     }
   }, [messages])
 
-  // Display connected users
-  function showActiveUsers(users) {
+  // Get all messages when a contact is clicked
+  useEffect(() => {
+    
+    if (selectedUserId) {
+      dispatch(getMessages(selectedUserId))
+    }
+    
+  }, [selectedUserId])
+
+  // Update active/connected users array
+  function updateActiveUsers(users) {
     if (users) {
       // Find unique active users 
       const connectedUsers = Array.from(new Set(users.map(obj => obj.id)))
@@ -101,6 +122,8 @@ function Profile() {
 
     const roomName = generateUniqueRoomName(user.id, userId)
 
+    setCurrentRoom(roomName)
+
     socket.emit('joinRoom', roomName)
   }
 
@@ -115,7 +138,7 @@ function Profile() {
     
     // Message data
     const messageData = {
-      id: Date.now(),
+      time: Date.now(),
       sender: user.id,
       recipient: selectedUserId,
       text: newMessage
@@ -127,14 +150,13 @@ function Profile() {
 
     // Update messages array
     dispatch(createMessage(messageData))
-    // setMessages(prev => ([...prev, {...messageData}]))
 
     // Clear newMessage state
     setNewMessage('')
   }
 
   // Remove duplicate messages
-  const uniqueMessages = uniqBy(messages, 'id')
+  const uniqueMessages = uniqBy(messages, 'time')
 
   return (
     <div className="flex h-screen">

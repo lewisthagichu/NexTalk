@@ -7,6 +7,6 @@ const {
 } = require('../controllers/messageController');
 
 router.post('/', protect, createMessage);
-router.get('/', protect, getMessages);
+router.get('/:id', protect, getMessages);
 
 module.exports = router;

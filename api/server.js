@@ -62,6 +62,7 @@ io.use((socket, next) => {
 //  Set up a connection event for SocketIO
 io.on('connection', (socket) => {
   const user = userJoin(socket.userId, socket.username);
+  // deleteAll(Message);
 
   socket.on('joinRoom', (roomName) => {
     socket.join(roomName);
@@ -69,21 +70,21 @@ io.on('connection', (socket) => {
 
   // Receive new text message from client
   socket.on('newMessage', async ({ roomName, messageData }) => {
-    // Destructure messageData properties
-    const { sender, recipient, text } = messageData;
+    const { text } = messageData;
 
+    // Ensure message is not empty
     if (roomName && text) {
-      // Create new message in DB
-      const messageDoc = await Message.create({ sender, recipient, text });
-      console.log(messageDoc._id);
-
       // Return message to client
-      io.to(roomName).emit('message', messageData);
+      io.to(roomName).emit('message', {
+        roomName,
+
+        messageData,
+      });
     }
   });
 
   // Send users to everyone connected
-  io.emit('activeUsers', { users: getUsers() });
+  io.emit('activeUsers', { connectedUsers: getUsers() });
 
   socket.on('disconnect', () => {
     userLeave(socket.userId);
