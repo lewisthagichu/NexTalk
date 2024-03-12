@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API_URL = '/api/users/';
 
+// Register new user
 const register = async (userData) => {
   const { data } = await axios.post(API_URL, userData);
 
@@ -11,6 +12,7 @@ const register = async (userData) => {
   return data;
 };
 
+// Login to existing account
 const login = async (userData) => {
   const { data } = await axios.post(API_URL + 'login', userData);
 
@@ -20,20 +22,22 @@ const login = async (userData) => {
   return data;
 };
 
-// const getProfile = async (token) => {
-//   const config = {
-//     headers: {
-//       Authorization: `Bearer ${token}`,
-//     },
-//   };
-//   const { data } = await axios.get(API_URL + 'me', config);
+// Get all users from the database
+const getUsers = async (token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const { data } = await axios.get(API_URL + 'contacts', config);
 
-//   return data;
-// };
+  return data;
+};
 
 const authService = {
   register,
   login,
+  getUsers,
 };
 
 export default authService;

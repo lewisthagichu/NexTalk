@@ -3,7 +3,9 @@ const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const bycrypt = require('bcryptjs');
 
-// Register user
+// @desc Register new user
+// @route POST /api/users/
+// @access Public
 const registerUser = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
@@ -36,7 +38,9 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-// Login user
+// @desc Login existing account
+// @route POST /api/users/login
+// @access Public
 const loginUser = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
@@ -59,16 +63,24 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-// Get user profile
-const getProfile = asyncHandler(async (req, res) => {
-  if (req.user) {
-    res.json(req.user);
-  } else {
-    res.status(401);
-    throw new Error('No profile found');
-  }
+// @desc get all registered users from DB
+// @route GET /api/users/
+// @access Private
+const getUsers = asyncHandler(async (req, res) => {
+  const users = await User.find({}, { _id: 1, username: 1 });
+
+  // Map through the array and rename "_id" to "id" in each user object
+  const allUsers = users.map((user) => {
+    return {
+      id: user._id.toString(),
+      username: user.username,
+    };
+  });
+
+  res.status(200).json(allUsers);
 });
 
+// Generate a jwt token
 function generateToken(id, username) {
   return jwt.sign({ id, username }, process.env.JWT_SECRET, {
     expiresIn: '30d',
@@ -78,5 +90,5 @@ function generateToken(id, username) {
 module.exports = {
   registerUser,
   loginUser,
-  getProfile,
+  getUsers,
 };

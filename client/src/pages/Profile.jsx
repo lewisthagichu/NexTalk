@@ -5,22 +5,23 @@ import { useNavigate } from "react-router-dom"
 import { FaRocketchat, FaUber } from "react-icons/fa6"
 import {uniqBy} from 'lodash'
 import io from 'socket.io-client'
-import Avatar from "../components/Avatar"
+import { getUsers } from "../features/auth/authSlice"
 import { createMessage, getMessages, reset } from "../features/messages/messagesSlice"
+import Contacts from "../components/Contacts"
 
 function Profile() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [socket,setSocket] = useState(null)
   const [activeUsers, setActiveUsers] = useState([])
+  const [offlineUsers, setOfflineUsers] = useState([])
   const [selectedUserId, setSelectedUserId] = useState(null)
   const [newMessage, setNewMessage] = useState('')
   const [currentRoom, setCurrentRoom] = useState(null)
-  // const [messages, setMessages] = useState([])
   const inputRef = useRef()
   const divRef = useRef()
 
-  const {user} = useSelector(state => state.auth)
+  const {user, allUsers} = useSelector(state => state.auth)
   const {messages, isLoadng, isError, message} = useSelector(state => state.messages)
 
   // Check if user is authorized
@@ -71,6 +72,20 @@ function Profile() {
         }, 1000);
       })      
   }
+
+  // Get offline users
+  useEffect(() => {
+    if (user) {
+      dispatch(getUsers())
+
+      const inactiveUsers = allUsers.filter(contact => {
+        return contact.id !== user.id && !activeUsers.some(activeUser => activeUser.id === contact.id);
+      });
+
+      setOfflineUsers(inactiveUsers);
+    }
+    
+  }, [activeUsers])
 
   // Auto scroll conversation container
   useEffect(() => {
@@ -157,6 +172,7 @@ function Profile() {
 
   // Remove duplicate messages
   const uniqueMessages = uniqBy(messages, 'time')
+  console.log(offlineUsers);
 
   return (
     <div className="flex h-screen">
@@ -164,14 +180,26 @@ function Profile() {
         {/* Logo */}
         <div className="text-blue-700 font-extrabold flex items-center text-2xl gap-2 p-4">NexTalk <FaRocketchat size={25}/></div>
 
-        {/* Display active users */}
+        {/* Display active and offline users */}
         {activeUsers.map(user => (
-          <div onClick={() => joinRoom(user.id)} 
-            key={user.id} 
-            className={`border-b border-gray-100 py-2 pl-4 flex items-center gap-2 cursor-pointer ${user.id === selectedUserId ? 'bg-blue-50' : ''}`} >
-            <Avatar userId={user.id} username={user.username} online={true}/>
-            <span className="text=gray-800">{user.username}</span>
-          </div>
+          <Contacts 
+            key={user.id}
+            contactId={user.id}
+            username={user.username}
+            joinRoom={joinRoom}
+            selected={user.id === selectedUserId}  
+            online={true}        
+          />
+        ))}
+        {offlineUsers.map(user => (
+          <Contacts 
+            key={user.id}
+            contactId={user.id}
+            username={user.username}
+            joinRoom={joinRoom}
+            selected={user.id === selectedUserId}  
+            online={false}        
+          />
         ))}
       </div>
 
@@ -214,7 +242,6 @@ function Profile() {
         )}    
         
       </div>
-
     </div>
   )
 }

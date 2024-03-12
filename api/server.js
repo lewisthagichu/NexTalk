@@ -87,6 +87,11 @@ io.on('connection', (socket) => {
   io.emit('activeUsers', { connectedUsers: getUsers() });
 
   socket.on('disconnect', () => {
-    userLeave(socket.userId);
+    const user = userLeave(socket.userId);
+
+    if (user) {
+      // Send users to everyone connected
+      io.emit('activeUsers', { connectedUsers: getUsers() });
+    }
   });
 });
