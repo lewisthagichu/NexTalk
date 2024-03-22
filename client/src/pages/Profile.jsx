@@ -8,6 +8,8 @@ import io from 'socket.io-client'
 import { getUsers } from "../features/auth/authSlice"
 import { createMessage, getMessages, reset } from "../features/messages/messagesSlice"
 import Contacts from "../components/Contacts"
+import defaultProfile from '../assets/profile.png'
+import convertToBase64 from "../utils/converttobase64"
 
 function Profile() {
   const dispatch = useDispatch()
@@ -18,6 +20,7 @@ function Profile() {
   const [selectedUserId, setSelectedUserId] = useState(null)
   const [newMessage, setNewMessage] = useState('')
   const [currentRoom, setCurrentRoom] = useState(null)
+  const [currentProfile, setCurrentProfile] = useState("")
   const inputRef = useRef()
   const divRef = useRef()
 
@@ -142,7 +145,7 @@ function Profile() {
     socket.emit('joinRoom', roomName)
   }
 
-  // Handlesubmit
+  // Handle message submit
   function handleSubmit(e) {
     e.preventDefault();
 
@@ -170,39 +173,77 @@ function Profile() {
     setNewMessage('')
   }
 
+  // Handle profile change
+  async function handleProfileChange(e) {
+    const file = e.target.files[0]
+    const base64 = await convertToBase64(file)
+    setCurrentProfile(base64)
+  }
+
+  // Handle prpfile submit
+  function profileSubmit(e) {
+    e.preventDefault()
+    console.log(currentProfile);
+  }
+
   // Remove duplicate messages
   const uniqueMessages = uniqBy(messages, 'time')
-  console.log(offlineUsers);
 
   return (
     <div className="flex h-screen">
-      <div className="bg-white w-1/3">
-        {/* Logo */}
-        <div className="text-blue-700 font-extrabold flex items-center text-2xl gap-2 p-4">NexTalk <FaRocketchat size={25}/></div>
+      <div className="bg-white w-1/3 flex flex-col justify-between">
+        <div>
+          {/* Logo */}
+          <div className="text-blue-700 font-extrabold flex items-center text-2xl gap-2 p-4">NexTalk <FaRocketchat size={25}/></div>
 
-        {/* Display active and offline users */}
-        {activeUsers.map(user => (
-          <Contacts 
-            key={user.id}
-            contactId={user.id}
-            username={user.username}
-            joinRoom={joinRoom}
-            selected={user.id === selectedUserId}  
-            online={true}        
-          />
-        ))}
-        {offlineUsers.map(user => (
-          <Contacts 
-            key={user.id}
-            contactId={user.id}
-            username={user.username}
-            joinRoom={joinRoom}
-            selected={user.id === selectedUserId}  
-            online={false}        
-          />
-        ))}
+          {/* Display active and offline users */}
+          {activeUsers.map(user => (
+            <Contacts 
+              key={user.id}
+              contactId={user.id}
+              username={user.username}
+              joinRoom={joinRoom}
+              selected={user.id === selectedUserId}  
+              online={true}        
+            />
+          ))}
+          {offlineUsers.map(user => (
+            <Contacts 
+              key={user.id}
+              contactId={user.id}
+              username={user.username}
+              joinRoom={joinRoom}
+              selected={user.id === selectedUserId}  
+              online={false}        
+            />
+          ))}
+        </div>
+
+        {/* Logout and Profile photo */}
+        <div>
+          <div className="border-b border-gray-100 py-2 pl-4">
+            <form onSubmit={profileSubmit} className="flex items-center gap-2">
+              <label htmlFor="file-upload" className='profile-photo'>
+                <img 
+                  src={currentProfile || defaultProfile} 
+                  className="profile-photo cursor-pointer"
+                  alt="Profile Photo"
+                  />
+              </label>
+              <input 
+                type="file" 
+                label="image"
+                name="myProfile" 
+                id="file-upload"
+                accept='.jpeg, .png, .jpg'
+                onChange={(e) => handleProfileChange(e)}
+              />
+              <button>Submit</button>
+            </form>
+          </div>
+        </div>
+
       </div>
-
       <div className="bg-blue-100 w-2/3 p-2 flex flex-col" style={{ minWidth: '500px'}}>
         <div className="flex-grow">
           {!selectedUserId && (

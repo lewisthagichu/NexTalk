@@ -1,0 +1,10 @@
+.profile-photo {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+input[type="file"] {
+    display: none;
+}

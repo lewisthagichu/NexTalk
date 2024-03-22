@@ -3,6 +3,8 @@ import {useDispatch, useSelector} from 'react-redux'
 import { toast } from "react-toastify"
 import { useNavigate } from "react-router-dom"
 import { reset, login } from "../features/auth/authSlice"
+import { IoIosChatbubbles } from "react-icons/io";
+import defaultProfile from '../assets/profile.png'
 
 function Login() {
     const [formData, setFormData] = useState({
@@ -47,40 +49,58 @@ function Login() {
       }
 
     return (
-      <div className="bg-blue-50 h-screen flex items-center">
-        <form onSubmit={handleSubmit} className="w-64 mx-auto mb-12" >
-            <input 
-            name="username" 
-            value={formData.username}
-            onChange={handleChange}
-            type="text" 
-            placeholder="username" 
-            className="block w-full rounded-sm p-2 mb-2 border"/>
+        <div className="registration">
+        <div className="header">
+            <div>{<IoIosChatbubbles color='#508de9' size={70} />}</div>
+            <h2>Sign in to your account</h2>
+        </div>
+        <div className='container'>
+            <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <label htmlFor="profile-picture">
+                        <img 
+                            src={defaultProfile} 
+                            className="profile-photo cursor-pointer"
+                            alt="Profile Photo"
+                            />
+                    </label>
+                </div>
+                <div className="form-group">
+                    <label htmlFor="username">Username</label>
+                    <input
+                        name="username"
+                        type="text"
+                        id="username"
+                        value={username}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                
+                <button className='btn'>Login</button>
 
-            <input 
-            name="password" 
-            value={formData.password}
-            onChange={handleChange}
-            type="password" 
-            placeholder="password" 
-            className="block w-full rounded-sm p-2 mb-2 border" />
-
-            <button className="bg-blue-500 text-white block w-full rounded-sm p-2">
-                Login
-            </button>
-
-            <div className="text-center mt-2">
+                <div className="redirect">
                 <div>
                 Dont have an account?
                 <button 
                     type="button" 
-                    className="ml-1" 
                     onClick={() => navigate('../register')}
                     >Register</button>
                 </div>
             </div>
-        </form>
-      </div>
+            </form>
+        </div>
+    </div>
 
     )
   }

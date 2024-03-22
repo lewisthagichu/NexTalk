@@ -8,6 +8,7 @@ const userSchema = mongoose.Schema(
       required: [true, 'Please enter a username'],
     },
     password: String,
+    profile: String,
   },
   {
     timestamps: true,
