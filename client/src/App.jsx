@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
 import Register from "./pages/Register"
 import Login from './pages/Login'
-import Profile from './pages/Profile'
+import Chat from './pages/Chat'
 
 function App() {
   axios.defaults.baseURL = "http://localhost:5000"
@@ -14,7 +14,7 @@ function App() {
     <>
       <Router>        
         <Routes>   
-          <Route path='/' element={<Profile />}/>
+          <Route path='/' element={<Chat />}/>
           <Route path='/register' element={<Register />} />
           <Route path='/login' element={<Login />} />          
         </Routes>       

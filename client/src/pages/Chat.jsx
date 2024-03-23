@@ -1,8 +1,10 @@
 /* eslint-disable react/no-unknown-property */
 import { useDispatch, useSelector } from "react-redux"
 import { useState, useEffect, useRef } from "react"
-import { useNavigate } from "react-router-dom"
-import { FaRocketchat, FaUber } from "react-icons/fa6"
+import { useNavigate, NavLink } from "react-router-dom"
+import { IoChatboxEllipses } from "react-icons/io5";
+import { MdGroupAdd } from "react-icons/md";
+import { BiLogOut } from "react-icons/bi";
 import {uniqBy} from 'lodash'
 import io from 'socket.io-client'
 import { getUsers } from "../features/auth/authSlice"
@@ -10,8 +12,9 @@ import { createMessage, getMessages, reset } from "../features/messages/messages
 import Contacts from "../components/Contacts"
 import defaultProfile from '../assets/profile.png'
 import convertToBase64 from "../utils/converttobase64"
+import Avatar from "../components/Avatar";
 
-function Profile() {
+function Chat() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [socket,setSocket] = useState(null)
@@ -31,7 +34,7 @@ function Profile() {
   useEffect(() => {  
     if (!user) {
         navigate('/register');
-    }
+    } 
   }, [ user, navigate])
 
 
@@ -88,7 +91,7 @@ function Profile() {
       setOfflineUsers(inactiveUsers);
     }
     
-  }, [activeUsers])
+  }, [activeUsers, allUsers])
 
   // Auto scroll conversation container
   useEffect(() => {
@@ -191,68 +194,91 @@ function Profile() {
 
   return (
     <div className="flex h-screen">
-      <div className="bg-white w-1/3 flex flex-col justify-between">
-        <div>
-          {/* Logo */}
-          <div className="text-blue-700 font-extrabold flex items-center text-2xl gap-2 p-4">NexTalk <FaRocketchat size={25}/></div>
-
-          {/* Display active and offline users */}
-          {activeUsers.map(user => (
-            <Contacts 
-              key={user.id}
-              contactId={user.id}
-              username={user.username}
-              joinRoom={joinRoom}
-              selected={user.id === selectedUserId}  
-              online={true}        
-            />
-          ))}
-          {offlineUsers.map(user => (
-            <Contacts 
-              key={user.id}
-              contactId={user.id}
-              username={user.username}
-              joinRoom={joinRoom}
-              selected={user.id === selectedUserId}  
-              online={false}        
-            />
-          ))}
-        </div>
-
-        {/* Logout and Profile photo */}
-        <div>
-          <div className="border-b border-gray-100 py-2 pl-4">
-            <form onSubmit={profileSubmit} className="flex items-center gap-2">
-              <label htmlFor="file-upload" className='profile-photo'>
-                <img 
-                  src={currentProfile || defaultProfile} 
-                  className="profile-photo cursor-pointer"
-                  alt="Profile Photo"
-                  />
-              </label>
-              <input 
-                type="file" 
-                label="image"
-                name="myProfile" 
-                id="file-upload"
-                accept='.jpeg, .png, .jpg'
-                onChange={(e) => handleProfileChange(e)}
-              />
-              <button>Submit</button>
-            </form>
+      <section className="bg-white w-1/3 flex left">
+        {/* Sidebar */}
+        <aside>
+          <nav>
+            <div className="icons selected">
+              <IoChatboxEllipses color="777A7E" size={28}/>
+            </div>
+            <div className="icons">
+              <MdGroupAdd color="777A7E" size={28}/>
+            </div>
+            <div className="icons">
+              <BiLogOut color="777A7E" size={25}/>
+            </div>
+            <div className="profile">
+              <img 
+                    src={currentProfile || defaultProfile} 
+                    className="profile-photo"
+                    alt="Profile Photo"
+                    />
+            </div>
+          </nav>          
+        </aside>
+        
+        <div className="contacts-container">
+          <div className="top">
+            <h1>Messages</h1>
           </div>
-        </div>
+          {/* Display active and offline users */}
+          <div className="contacts">
+            {activeUsers.map(user => (
+              <Contacts 
+                key={user.id}
+                contactId={user.id}
+                username={user.username}
+                joinRoom={joinRoom}
+                selected={user.id === selectedUserId}  
+                online={true}        
+              />
+            ))}
+            {offlineUsers.map(user => (
+              <Contacts 
+                key={user.id}
+                contactId={user.id}
+                username={user.username}
+                joinRoom={joinRoom}
+                selected={user.id === selectedUserId}  
+                online={false}        
+              />
+            ))}
+          </div>
+        </div>        
+      </section>
 
-      </div>
-      <div className="bg-blue-100 w-2/3 p-2 flex flex-col" style={{ minWidth: '500px'}}>
-        <div className="flex-grow">
+      {/* Right */}
+      <section className="bg-blue-100 w-2/3 flex flex-col right">
+        <div className="flex flex-col flex-grow">
           {!selectedUserId && (
             <div className="flex h-full flex-grow items-center justify-center">
-              <div className="text-gray-300">&larr; Select a contact to start conversng</div>
+              <div className="text-gray-300">&lassssrr; Select a contact to start conversng</div>
             </div>
           )}
-          {!!selectedUserId && (
+          {!!selectedUserId && ( 
+            <>  
+            <div className="details">
+              <div>
+                <img 
+                    src={currentProfile || defaultProfile} 
+                    className="profile-photo"
+                    alt="Profile Photo"
+                    />
+              </div>
+              <div className="name">
+                <small className="username">Bake</small>
+                <small>Online</small>
+              </div>
+              <form onSubmit={handleSubmit}>
+                <input
+                  type="text"
+                  placeholder="Search..."
+              />
+              </form>
+            </div>  
+
             <div  className="relative h-full">
+                {/* Messages */}
               <div ref={divRef} className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2">
               {uniqueMessages.map(message => (
                 <div key={message.id} className={message.sender === user.id ? 'text-right' : 'text-left'} >
@@ -261,6 +287,7 @@ function Profile() {
               ))}
               </div>
             </div>
+            </>
             
           )}
         </div>
@@ -282,9 +309,9 @@ function Profile() {
         </form>
         )}    
         
-      </div>
+      </section>
     </div>
   )
 }
 
-export default Profile
+export default Chat

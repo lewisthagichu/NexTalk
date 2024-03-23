@@ -71,7 +71,7 @@ function Login() {
                         name="username"
                         type="text"
                         id="username"
-                        value={username}
+                        value={formData.username}
                         onChange={handleChange}
                         required
                     />
@@ -79,9 +79,10 @@ function Login() {
                 <div className="form-group">
                     <label htmlFor="password">Password</label>
                     <input
+                        name="password"
                         type="password"
                         id="password"
-                        value={password}
+                        value={formData.password}
                         onChange={handleChange}
                         required
                     />

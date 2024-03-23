@@ -95,10 +95,10 @@ return (
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="password">Confirm Password</label>
+                    <label htmlFor="confirmPassword">Confirm Password</label>
                     <input
                         type="password"
-                        id="password"
+                        id="confirmPassword"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required

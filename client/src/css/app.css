@@ -1,3 +1,125 @@
+:root {
+    --color-primary: #3670C7;
+    --color-primary-light: #508de9;
+    --color-selected: #eff1f7;
+    --color-white: #fff;
+    --color-grey: #797d81;
+    --color-dark: #000;
+    --color-light: rgba(132, 139, 200, 0.18);
+    --color-grey-light: #777A7E;
+    --color-background: #f6f6f9;
+  
+    --card-border-radius: 1.2rem;
+    --border-radius-1: 0.4rem;
+  
+    --card-padding: 2.8rem;
+    --padding: 0.8rem;
+    --padding-2: 1.2rem;
+  
+    --box-shadow: 0 2rem 3rem var(--color-light);
+  }
+
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    box-sizing: border-box;
+    appearance: none;
+    text-decoration: none;
+    list-style: none;
+    font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+html {
+    font-size: 62.5%;
+}
+
+body {
+    min-height: 100vh;
+}
+
+/* LEFT */
+section.left {
+    background: var(--color-background);
+    min-width: 200px;
+}
+
+/* ASIDE */
+aside {
+    width: 100px;
+    border-right: solid 1px rgb(190, 189, 189);
+    position: relative;
+    padding-top: var(--padding);
+}
+
+aside nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: .5rem;
+}
+
+aside nav > div:nth-child(3) {
+    margin-right: 1rem;
+}
+
+aside nav .icons {
+    padding: var(--padding);
+    border-radius: var(--border-radius-1);
+    cursor: pointer;
+}
+
+aside nav .icons.selected,
+aside nav .icons:hover,
+aside .profile:hover {
+    background: var(--color-selected);
+}
+
+aside .profile {
+    position: fixed;
+    bottom: 2rem;
+    left: 3.2rem;
+    transform: translateX(-50%);
+    padding: var(--padding);
+}
+
+aside .profile .profile-photo {
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 50%;
+}
+
+/* CONTACTS */
+.contacts-container {
+    flex-grow: 1;
+}
+
+.contacts-container .top {
+    padding: var(--padding-2);
+    border-bottom: solid 1px rgb(190, 189, 189);
+}
+
+.top h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.contacts .contact {
+    padding: var(--padding-2);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    border-radius: var(--border-radius-1);
+}
+
+.contact.selected,
+.contact:hover {
+   background: var(--color-selected); 
+}
+
+/* PROFILE */
 .profile-photo {
     width: 2rem;
     height: 2rem;
@@ -8,3 +130,22 @@
 input[type="file"] {
     display: none;
 }
+
+/* RIGHT */
+section.right {
+    min-width: 500px;
+}
+
+section .details {
+    width: 100%;
+    padding: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--color-background);
+}
+
+.details .uername {
+    font-size: .8rem;
+}
+
