@@ -5,6 +5,7 @@ html {
 }
 
 .registration {
+  position: relative;
   height: 100vh;
   background: var(--color-background);
   display: flex;

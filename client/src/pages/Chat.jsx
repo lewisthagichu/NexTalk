@@ -2,7 +2,8 @@
 import { useDispatch, useSelector } from "react-redux"
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, NavLink } from "react-router-dom"
-import { IoChatboxEllipses } from "react-icons/io5";
+import { IoChatboxEllipses, IoCall, IoSearch } from "react-icons/io5";
+import { FaArrowLeftLong } from "react-icons/fa6";
 import { MdGroupAdd } from "react-icons/md";
 import { BiLogOut } from "react-icons/bi";
 import {uniqBy} from 'lodash'
@@ -13,6 +14,8 @@ import Contacts from "../components/Contacts"
 import defaultProfile from '../assets/profile.png'
 import convertToBase64 from "../utils/converttobase64"
 import Avatar from "../components/Avatar";
+import Footer from '../components/Footer'
+import ChatBubble from "../components/ChatBubble";
 
 function Chat() {
   const dispatch = useDispatch()
@@ -197,29 +200,40 @@ function Chat() {
       <section className="bg-white w-1/3 flex left">
         {/* Sidebar */}
         <aside>
-          <nav>
-            <div className="icons selected">
-              <IoChatboxEllipses color="777A7E" size={28}/>
-            </div>
-            <div className="icons">
-              <MdGroupAdd color="777A7E" size={28}/>
-            </div>
-            <div className="icons">
-              <BiLogOut color="777A7E" size={25}/>
-            </div>
+          <div className="container">
             <div className="profile">
               <img 
                     src={currentProfile || defaultProfile} 
                     className="profile-photo"
                     alt="Profile Photo"
                     />
-            </div>
-          </nav>          
+            </div> 
+            <nav> 
+              <div className="icons selected">
+                <IoChatboxEllipses color="777A7E" size={28}/>
+              </div>
+              <div className="icons">
+                <MdGroupAdd color="777A7E" size={28}/>
+              </div>
+            </nav>   
+          </div>
+          <div className="icons">
+            <BiLogOut color="777A7E" size={28}/>
+          </div>
+               
         </aside>
         
         <div className="contacts-container">
           <div className="top">
-            <h1>Messages</h1>
+            <div className="icons">
+                  <IoSearch color="#7d8da1" size={22}/>
+            </div>
+            <form className="search-bar chats active" onSubmit={handleSubmit}>
+                <input
+                  type="text"
+                  placeholder="Search contacts"
+                />
+            </form>
           </div>
           {/* Display active and offline users */}
           <div className="contacts">
@@ -244,6 +258,7 @@ function Chat() {
               />
             ))}
           </div>
+          <Footer />
         </div>        
       </section>
 
@@ -252,37 +267,53 @@ function Chat() {
         <div className="flex flex-col flex-grow">
           {!selectedUserId && (
             <div className="flex h-full flex-grow items-center justify-center">
-              <div className="text-gray-300">&lassssrr; Select a contact to start conversng</div>
+              <div className="flex  items-center  gap-2 text-gray-300"><FaArrowLeftLong/> Select a contact to start conversng</div>
             </div>
           )}
           {!!selectedUserId && ( 
             <>  
             <div className="details">
-              <div>
+              <div className="profile">
                 <img 
                     src={currentProfile || defaultProfile} 
                     className="profile-photo"
                     alt="Profile Photo"
                     />
+                
+                <div className="name">
+                  <small className="username">Bake</small>
+                  <small>Online</small>
+                </div>
               </div>
-              <div className="name">
-                <small className="username">Bake</small>
-                <small>Online</small>
-              </div>
-              <form onSubmit={handleSubmit}>
+
+              <form className="search-bar chat" onSubmit={handleSubmit}>
                 <input
                   type="text"
                   placeholder="Search..."
-              />
+                />
               </form>
+             
+              <div className="calls">
+                <div className="icons">
+                  <IoSearch color="#7d8da1" size={22}/>
+                </div>
+                <div className="icons">
+                  <IoCall color="#7d8da1" size={20}/>
+                </div>
+              </div>
             </div>  
 
-            <div  className="relative h-full">
-                {/* Messages */}
+            {/* Messages */}
+            <div  className="relative h-full">  
               <div ref={divRef} className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2">
               {uniqueMessages.map(message => (
-                <div key={message.id} className={message.sender === user.id ? 'text-right' : 'text-left'} >
-                  <div className={"text-left inline-block p-2 my-2 mx-8 rounded-md text-sm " +(message.sender === user.id ? 'bg-blue-500 text-white':'bg-white text-gray-500')} style={{ minWidth: '50px', maxWidth: '300px', wordWrap: 'break-word' }}>{message.text}</div>
+                <div key={message.id}  className={message.sender === user.id ? 'text-right' : 'text-left'} > 
+                  <div className={"message " + (message.sender === user.id ? 'bg-blue-400 text-white' : 'bg-white text-gray-500')}>
+                    <small className="name">{message.sender === user.id ? 'Me' : 'You'}</small>                    
+                    <div >{message.text}</div>
+                    <small className="time">11:12 PM</small>
+                  </div>                  
+                  
                 </div>
               ))}
               </div>

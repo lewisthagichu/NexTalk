@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { reset, login } from "../features/auth/authSlice"
 import { IoIosChatbubbles } from "react-icons/io";
 import defaultProfile from '../assets/profile.png'
+import Footer from '../components/Footer';
 
 function Login() {
     const [formData, setFormData] = useState({
@@ -101,6 +102,7 @@ function Login() {
             </div>
             </form>
         </div>
+        <Footer />
     </div>
 
     )

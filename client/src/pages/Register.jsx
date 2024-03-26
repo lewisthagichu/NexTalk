@@ -7,6 +7,7 @@ import { reset, register } from "../features/auth/authSlice"
 import { IoIosChatbubbles } from "react-icons/io";
 import convertToBase64 from '../utils/converttobase64';
 import defaultProfile from '../assets/profile.png'
+import Footer from '../components/Footer';
 
 function Register() {
   // State variables to hold form data
@@ -117,6 +118,7 @@ return (
                  </div>
             </form>
         </div>
+        <Footer />
     </div>
   );
 }
