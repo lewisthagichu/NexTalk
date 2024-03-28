@@ -52,7 +52,7 @@ function Login() {
     return (
         <div className="registration">
         <div className="header">
-            <div>{<IoIosChatbubbles color='#508de9' size={70} />}</div>
+            <div>{<IoIosChatbubbles color='#4299e1' size={70} />}</div>
             <h2>Sign in to your account</h2>
         </div>
         <div className='container'>

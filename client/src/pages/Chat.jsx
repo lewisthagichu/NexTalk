@@ -2,7 +2,7 @@
 import { useDispatch, useSelector } from "react-redux"
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, NavLink } from "react-router-dom"
-import { IoChatboxEllipses, IoCall, IoSearch } from "react-icons/io5";
+import { IoChatboxEllipses, IoCall, IoSearch, IoSendSharp, IoAttachOutline  } from "react-icons/io5";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { MdGroupAdd } from "react-icons/md";
 import { BiLogOut } from "react-icons/bi";
@@ -10,12 +10,9 @@ import {uniqBy} from 'lodash'
 import io from 'socket.io-client'
 import { getUsers } from "../features/auth/authSlice"
 import { createMessage, getMessages, reset } from "../features/messages/messagesSlice"
-import Contacts from "../components/Contacts"
-import defaultProfile from '../assets/profile.png'
-import convertToBase64 from "../utils/converttobase64"
 import Avatar from "../components/Avatar";
+import Contacts from "../components/Contacts"
 import Footer from '../components/Footer'
-import ChatBubble from "../components/ChatBubble";
 
 function Chat() {
   const dispatch = useDispatch()
@@ -27,6 +24,7 @@ function Chat() {
   const [newMessage, setNewMessage] = useState('')
   const [currentRoom, setCurrentRoom] = useState(null)
   const [currentProfile, setCurrentProfile] = useState("")
+  const [modal, setModal] = useState(false)
   const inputRef = useRef()
   const divRef = useRef()
 
@@ -167,46 +165,41 @@ function Chat() {
       recipient: selectedUserId,
       text: newMessage
     }
-
-
     // Send text to server
     socket.emit('newMessage', {roomName, messageData})
-
     // Update messages array
     dispatch(createMessage(messageData))
-
     // Clear newMessage state
     setNewMessage('')
   }
 
-  // Handle profile change
-  async function handleProfileChange(e) {
-    const file = e.target.files[0]
-    const base64 = await convertToBase64(file)
-    setCurrentProfile(base64)
-  }
+  // Toggle profile modal
+  function toggleModal() {
+    setModal(!modal)
 
-  // Handle prpfile submit
-  function profileSubmit(e) {
-    e.preventDefault()
-    console.log(currentProfile);
+    if(modal) {
+      document.body.classList.add('active-modal')
+    } else {
+      document.body.classList.remove('active-modal')
+    }
   }
 
   // Remove duplicate messages
   const uniqueMessages = uniqBy(messages, 'time')
 
   return (
+    <>
     <div className="flex h-screen">
       <section className="bg-white w-1/3 flex left">
         {/* Sidebar */}
         <aside>
           <div className="container">
             <div className="profile">
-              <img 
-                    src={currentProfile || defaultProfile} 
-                    className="profile-photo"
-                    alt="Profile Photo"
-                    />
+              <Avatar 
+                modal={modal}
+                toggleModal={toggleModal}
+                isMine={true}
+                />
             </div> 
             <nav> 
               <div className="icons selected">
@@ -244,7 +237,9 @@ function Chat() {
                 username={user.username}
                 joinRoom={joinRoom}
                 selected={user.id === selectedUserId}  
-                online={true}        
+                online={true}
+                modal={modal} 
+                toggleModal={toggleModal}       
               />
             ))}
             {offlineUsers.map(user => (
@@ -254,7 +249,7 @@ function Chat() {
                 username={user.username}
                 joinRoom={joinRoom}
                 selected={user.id === selectedUserId}  
-                online={false}        
+                online={false}   
               />
             ))}
           </div>
@@ -274,19 +269,18 @@ function Chat() {
             <>  
             <div className="details">
               <div className="profile">
-                <img 
-                    src={currentProfile || defaultProfile} 
-                    className="profile-photo"
-                    alt="Profile Photo"
-                    />
-                
+                <Avatar 
+                  modal={modal}
+                  toggleModal={toggleModal}
+                  isMine={false}
+                />                
                 <div className="name">
                   <small className="username">Bake</small>
                   <small>Online</small>
                 </div>
               </div>
 
-              <form className="search-bar chat" onSubmit={handleSubmit}>
+              <form className="search-bar chat active" onSubmit={handleSubmit}>
                 <input
                   type="text"
                   placeholder="Search..."
@@ -307,13 +301,12 @@ function Chat() {
             <div  className="relative h-full">  
               <div ref={divRef} className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2">
               {uniqueMessages.map(message => (
-                <div key={message.id}  className={message.sender === user.id ? 'text-right' : 'text-left'} > 
-                  <div className={"message " + (message.sender === user.id ? 'bg-blue-400 text-white' : 'bg-white text-gray-500')}>
-                    <small className="name">{message.sender === user.id ? 'Me' : 'You'}</small>                    
-                    <div >{message.text}</div>
-                    <small className="time">11:12 PM</small>
-                  </div>                  
-                  
+                <div key={message.id}  className={"message-container " + (message.sender === user.id ? 'text-right' : 'text-left')} > 
+                  <div>
+                    <small className="name">{message.sender === user.id ? 'Me' : 'You'}</small>   
+                    <small className="time">11:12 PM</small>     
+                  </div>
+                  <div className={"message " + (message.sender === user.id ? 'bg-blue-400 text-white' : 'bg-white text-gray-500')}>{message.text}</div>  
                 </div>
               ))}
               </div>
@@ -323,25 +316,31 @@ function Chat() {
           )}
         </div>
 
+        {/* SEND FORM */}
         {!!selectedUserId && (
-          <form onSubmit={handleSubmit} className="flex gap-2">
+          <form onSubmit={handleSubmit} className="send-form" >
+            <label htmlFor="file"><IoAttachOutline size={24}/></label>
+            <input 
+              type="file" 
+              name="file" 
+              id="file" 
+              accept='.jpeg, .png, .jpg'/>
             <input 
               type="text"
               value={newMessage}
               ref={inputRef}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type your message here"
-              className="bg-white flex-grow border rounded-sm p-2"/>
-            <button className="bg-blue-500 p-2 text-white rounded-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-              </svg>
+              />
+            <button>
+              <IoSendSharp color="#4299e1" size={25} />
             </button>
         </form>
         )}    
         
       </section>
     </div>
+  </>
   )
 }
 

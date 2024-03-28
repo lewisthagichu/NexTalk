@@ -54,7 +54,7 @@ if (isLoading) {
 return (
     <div className="registration">
         <div className="header">
-            <div>{<IoIosChatbubbles color='#508de9' size={70} />}</div>
+            <div>{<IoIosChatbubbles color='#4299e1' size={70} />}</div>
             <h2>Sign up to Connect</h2>
         </div>
         <div className='container'>
@@ -63,7 +63,7 @@ return (
                     <label htmlFor="profile-picture">
                         <img 
                             src={profilePicture || defaultProfile} 
-                            className="profile-photo cursor-pointer"
+                            className="modal-photo cursor-pointer"
                             alt="Profile Photo"
                             />
                     </label>

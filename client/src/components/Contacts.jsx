@@ -1,4 +1,4 @@
-import Avatar from "./Avatar";
+import EmptyAvatar from "./EmptyAvatar";
 
 function Contacts({ contactId, username, selected, joinRoom, online }) {
     return (
@@ -7,7 +7,7 @@ function Contacts({ contactId, username, selected, joinRoom, online }) {
             onClick={() => joinRoom(contactId)}
             className={`contact ${selected ? 'selected' : ''}`}
         >
-            <Avatar userId={contactId} username={username} online={online} />
+            <EmptyAvatar userId={contactId} username={username} online={online} />
             <span className="text-gray-800">{username}</span>
         </div>
         )

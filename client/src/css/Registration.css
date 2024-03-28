@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-
 html {
   font-size: 14px;
 }
@@ -66,13 +64,6 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.form-group .profile-photo {
-    width: 6rem;
-    height: 6rem;
-    border-radius: 50%;
-    overflow: hidden;
 }
 
 .form-group input[type="text"],

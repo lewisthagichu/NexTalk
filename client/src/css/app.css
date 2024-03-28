@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
 :root {
-    --color-primary: #3670C7;
-    --color-primary-light: #508de9;
+    --color-primary: #4299e1;
+    --color-primary-light: #63b3ed;
     --color-selected: #eff1f7;
     --color-white: #fff;
     --color-grey: #797d81;
@@ -29,14 +31,10 @@
     appearance: none;
     text-decoration: none;
     list-style: none;
-    font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 /* GLOBAL */
-html {
-    font-size: 62.5%;
-}
-
 body {
     min-height: 100vh;
 }
@@ -45,10 +43,36 @@ small {
     font-size: 0.45rem;
 }
 
+.profile-photo {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.empty-avatar {
+    width: 2.4rem;
+    height: 2.4rem;
+    cursor: pointer;
+}
+
+.modal-photo {
+    width: 7rem;
+    height: 7rem;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+}
+
 .icons {
     padding: var(--padding);
     border-radius: var(--border-radius-1);
     cursor: pointer;
+}
+
+input[type="file"] {
+    display: none;
 }
 
 /* ............................LEFT....................... */
@@ -82,7 +106,6 @@ aside {
     padding: .5rem;
 }
 
-.container .profile img:hover,
 aside .icons.selected,
 aside .icons:hover,
 .calls .icons:hover {
@@ -136,19 +159,6 @@ footer .git-logo {
     margin-left: 0.5rem;
 }
 
-/* PROFILE */
-.profile-photo {
-    width: 2.4rem;
-    height: 2.4rem;
-    border-radius: 50%;
-    overflow: hidden;
-    cursor: pointer;
-}
-
-input[type="file"] {
-    display: none;
-}
-
 /* RIGHT */
 section.right {
     min-width: 500px;
@@ -170,14 +180,14 @@ section .details {
     gap: 1rem;
 }
 
-.profile .name {
+.profile > .name {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
 .name .username {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
 }
 
@@ -213,23 +223,56 @@ section .details {
     margin-right: 1.6rem;
 }
 
-/* SEND TEXT FORM */
-.message {
+/* MESSAGE CONAINER */
+.message-container {
+    margin: 1.1rem;
+}
+.message-container .message {
     position: relative;
     display: inline-block;
     min-width: 80px;
     max-width: 300px;
     word-wrap: break-word;
-    margin: .5rem 1rem;
-    padding: 2px 12px; 
-    border-radius: 12px;
+    padding: 4px 12px; 
+    border-radius: 15px;
     text-align: left;
-    font-size: .9rem;
-    font-weight: 500;
+    font-size: 1.1rem;
+    font-weight: 400;
 }
 
-.message .time {
-    display: block;
-    text-align: right;
-    font-size: .65rem;
+.message-container > .name {
+    font-size: .9rem;
+    font-weight: 600;
+} 
+
+.message-container .time {
+    margin-left: .5rem;
+    font-size: .65rem;    
 }
+
+/* SEND TEXT FORM */
+.send-form {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: .2rem 0;
+    background: #f0eff5;
+    border-radius: var(--border-radius-1);
+    
+}
+
+.send-form input[type="text"] {
+    flex-grow: 1;
+    padding: .6rem 1rem;
+    background: var(--color-background);    
+    font-size: 1.1rem;
+    color: #7d8da1;
+}
+
+.send-form label,
+.send-form button {
+    background: transparent;
+    padding: 1rem;
+    cursor: pointer;
+}
+
