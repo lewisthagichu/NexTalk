@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { MdOutlinePersonOutline, MdOutlineClose, MdOutlineCalendarMonth } from "react-icons/md";
-import defaultPhoto from '../assets/profile.png'
-import convertToBase64 from "../utils/converttobase64"
-import '../css/modal.css'
+import defaultPhoto from '../../assets/profile.png'
+import convertToBase64 from "../../utils/converttobase64"
+import '../../css/modal.css'
 
 function ProfileModal({toggleModal}) {
   const [profilePicture, setProfilePicture] = useState("")

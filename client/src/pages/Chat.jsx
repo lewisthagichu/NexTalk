@@ -12,6 +12,7 @@ import { getUsers } from "../features/auth/authSlice"
 import { createMessage, getMessages, reset } from "../features/messages/messagesSlice"
 import Avatar from "../components/Avatar";
 import Contacts from "../components/Contacts"
+import Message from "../components/Message";
 import Footer from '../components/Footer'
 
 function Chat() {
@@ -20,14 +21,14 @@ function Chat() {
   const [socket,setSocket] = useState(null)
   const [activeUsers, setActiveUsers] = useState([])
   const [offlineUsers, setOfflineUsers] = useState([])
+  const [selectedUser, setSelectedUser] = useState(null)
   const [selectedUserId, setSelectedUserId] = useState(null)
+  const [isOnline, setIsOnline] = useState(null)
   const [newMessage, setNewMessage] = useState('')
   const [currentRoom, setCurrentRoom] = useState(null)
   const [currentProfile, setCurrentProfile] = useState("")
-  const [modal, setModal] = useState(false)
   const inputRef = useRef()
   const divRef = useRef()
-
   const {user, allUsers} = useSelector(state => state.auth)
   const {messages, isLoadng, isError, message} = useSelector(state => state.messages)
 
@@ -80,7 +81,7 @@ function Chat() {
       })      
   }
 
-  // Get offline users
+  // Get offline users and check if they are online
   useEffect(() => {
     if (user) {
       dispatch(getUsers())
@@ -90,9 +91,15 @@ function Chat() {
       });
 
       setOfflineUsers(inactiveUsers);
+
+      if (selectedUser) {
+        const isOnline = activeUsers.some(item => item.id === selectedUser.id && item.username === selectedUser.username);
+
+        setIsOnline(isOnline);
+      }
     }
     
-  }, [activeUsers, allUsers])
+  }, [activeUsers, allUsers, selectedUser])
 
   // Auto scroll conversation container
   useEffect(() => {
@@ -139,14 +146,16 @@ function Chat() {
   }
 
   // Joint room with selected user/contact
-  function joinRoom(userId) {
-    setSelectedUserId(userId);
+  function joinRoom(selectedUser) {
+    // Set selected user state and its corresponding ID
+    setSelectedUser(selectedUser);
+    setSelectedUserId(selectedUser.id);
 
-    const roomName = generateUniqueRoomName(user.id, userId)
-
+    const roomName = generateUniqueRoomName(user.id, selectedUser.id)
     setCurrentRoom(roomName)
 
     socket.emit('joinRoom', roomName)
+    console.log(offlineUsers);
   }
 
   // Handle message submit
@@ -173,17 +182,6 @@ function Chat() {
     setNewMessage('')
   }
 
-  // Toggle profile modal
-  function toggleModal() {
-    setModal(!modal)
-
-    if(modal) {
-      document.body.classList.add('active-modal')
-    } else {
-      document.body.classList.remove('active-modal')
-    }
-  }
-
   // Remove duplicate messages
   const uniqueMessages = uniqBy(messages, 'time')
 
@@ -196,9 +194,7 @@ function Chat() {
           <div className="container">
             <div className="profile">
               <Avatar 
-                modal={modal}
-                toggleModal={toggleModal}
-                isMine={true}
+                profileExists={true}
                 />
             </div> 
             <nav> 
@@ -233,23 +229,19 @@ function Chat() {
             {activeUsers.map(user => (
               <Contacts 
                 key={user.id}
-                contactId={user.id}
-                username={user.username}
+                selectedUser={user}
                 joinRoom={joinRoom}
                 selected={user.id === selectedUserId}  
                 online={true}
-                modal={modal} 
-                toggleModal={toggleModal}       
               />
             ))}
             {offlineUsers.map(user => (
               <Contacts 
                 key={user.id}
-                contactId={user.id}
-                username={user.username}
+                selectedUser={user}
                 joinRoom={joinRoom}
-                selected={user.id === selectedUserId}  
-                online={false}   
+                selected={user.id === selectedUserId} 
+                online={false}
               />
             ))}
           </div>
@@ -270,13 +262,11 @@ function Chat() {
             <div className="details">
               <div className="profile">
                 <Avatar 
-                  modal={modal}
-                  toggleModal={toggleModal}
-                  isMine={false}
+                  profileExists={true}
                 />                
                 <div className="name">
-                  <small className="username">Bake</small>
-                  <small>Online</small>
+                  <small className="username">{selectedUser.username}</small>
+                  <small>{isOnline ? "Online" : "Offline"}</small>
                 </div>
               </div>
 
@@ -301,13 +291,11 @@ function Chat() {
             <div  className="relative h-full">  
               <div ref={divRef} className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2">
               {uniqueMessages.map(message => (
-                <div key={message.id}  className={"message-container " + (message.sender === user.id ? 'text-right' : 'text-left')} > 
-                  <div>
-                    <small className="name">{message.sender === user.id ? 'Me' : 'You'}</small>   
-                    <small className="time">11:12 PM</small>     
-                  </div>
-                  <div className={"message " + (message.sender === user.id ? 'bg-blue-400 text-white' : 'bg-white text-gray-500')}>{message.text}</div>  
-                </div>
+                <Message 
+                  key={message.id}
+                  message={message}
+                  senderName={message.sender === user.id ? user.username : selectedUser.username}
+                  />
               ))}
               </div>
             </div>

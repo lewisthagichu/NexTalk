@@ -1,4 +1,4 @@
-export function extractTime(dateString) {
+export default function extractTime(dateString) {
   const date = new Date(dateString);
   const hours = padZero(date.getHours());
   const minutes = padZero(date.getMinutes());

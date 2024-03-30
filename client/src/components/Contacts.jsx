@@ -1,14 +1,18 @@
-import EmptyAvatar from "./EmptyAvatar";
+import Avatar from "./Avatar";
 
-function Contacts({ contactId, username, selected, joinRoom, online }) {
+function Contacts({ selectedUser, joinRoom, selected, online }) {
     return (
         <div
-            key={contactId}
-            onClick={() => joinRoom(contactId)}
+            key={selectedUser.id}
+            onClick={() => joinRoom(selectedUser)}
             className={`contact ${selected ? 'selected' : ''}`}
         >
-            <EmptyAvatar userId={contactId} username={username} online={online} />
-            <span className="text-gray-800">{username}</span>
+            <Avatar 
+                userId={selectedUser.id} 
+                username={selectedUser.username} 
+                online={online}
+                profileExists={false} />
+            <span className="text-gray-800">{selectedUser.username}</span>
         </div>
         )
   }
