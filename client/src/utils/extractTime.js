@@ -1,11 +1,12 @@
-export default function extractTime(dateString) {
+export function extractTime(dateString) {
   const date = new Date(dateString);
-  const hours = padZero(date.getHours());
-  const minutes = padZero(date.getMinutes());
-  return `${hours}:${minutes}`;
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
-// Helper function to pad single-digit numbers with a leading zero
-function padZero(number) {
-  return number.toString().padStart(2, '0');
+export function extractDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-GB'); // 'en-GB' specifies the date format as DD/MM/YYYY
 }

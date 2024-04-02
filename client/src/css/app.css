@@ -159,13 +159,22 @@ footer .git-logo {
     margin-left: 0.5rem;
 }
 
-/* RIGHT */
+/* -------------------------RIGHT---------------------- */
 section.right {
     min-width: 500px;
     background: var(--color-background);
 }
 
-section .details {
+/* CONVERSATION CONTAINER */
+
+.conversation-container {
+   display: flex;
+   flex-direction: column; 
+   flex-grow: 1;
+   height: 100vh;
+}
+
+.conversation-container .user-details {
     width: 100%;
     padding: var(--padding);
     display: grid;
@@ -174,7 +183,7 @@ section .details {
     gap: 2rem;
 }
 
-.details .profile {
+.user-details .profile {
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -214,7 +223,7 @@ section .details {
     color: #7d8da1;
 }
 
-.details .calls {
+.user-details .calls {
     display: flex;
     align-items: center;
 }
@@ -223,7 +232,7 @@ section .details {
     margin-right: 1.6rem;
 }
 
-/* MESSAGE CONAINER */
+/* MESSAGE CONTAINER */
 .message-container {
     margin: 1.1rem;
 }

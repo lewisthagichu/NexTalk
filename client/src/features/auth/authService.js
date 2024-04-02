@@ -34,10 +34,16 @@ const getUsers = async (token) => {
   return data;
 };
 
+// Logout
+const logout = () => {
+  localStorage.removeItem('user');
+};
+
 const authService = {
   register,
   login,
   getUsers,
+  logout,
 };
 
 export default authService;

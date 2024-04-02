@@ -22,8 +22,7 @@ function ProfileModal({toggleModal}) {
   }
 
   return (
-    <div className="modal">
-      <div onClick={toggleModal} className="overlay"></div>
+    <div onClick={toggleModal} className="modal overlay">
       <div className="modal-content">
         <form onSubmit={handleSubmit} className="modal-form">
           <h2>User Info</h2>

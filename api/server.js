@@ -68,14 +68,13 @@ io.on('connection', (socket) => {
 
   // Receive new text message from client
   socket.on('newMessage', async ({ roomName, messageData }) => {
-    const { text } = messageData;
+    const { text, file } = messageData;
 
     // Ensure message is not empty
-    if (roomName && text) {
+    if (roomName && (text || file)) {
       // Return message to client
       io.to(roomName).emit('message', {
         roomName,
-
         messageData,
       });
     }

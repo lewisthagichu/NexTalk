@@ -57,7 +57,7 @@ function Login() {
         </div>
         <div className='container'>
             <form onSubmit={handleSubmit}>
-                <div className="form-group">
+                <div className="form-group hidden">
                     <label htmlFor="profile-picture">
                         <img 
                             src={defaultProfile} 

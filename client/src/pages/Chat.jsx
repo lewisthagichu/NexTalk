@@ -8,12 +8,14 @@ import { MdGroupAdd } from "react-icons/md";
 import { BiLogOut } from "react-icons/bi";
 import {uniqBy} from 'lodash'
 import io from 'socket.io-client'
-import { getUsers } from "../features/auth/authSlice"
-import { createMessage, getMessages, reset } from "../features/messages/messagesSlice"
+import { reset, getUsers, logout } from "../features/auth/authSlice"
+import { createMessage, getMessages } from "../features/messages/messagesSlice"
 import Avatar from "../components/Avatar";
 import Contacts from "../components/Contacts"
 import Message from "../components/Message";
 import Footer from '../components/Footer'
+import generateUniqueRoomName from '../utils/generateUniqueRoomName'
+import convertToBase64 from "../utils/converttobase64";
 
 function Chat() {
   const dispatch = useDispatch()
@@ -27,10 +29,10 @@ function Chat() {
   const [newMessage, setNewMessage] = useState('')
   const [currentRoom, setCurrentRoom] = useState(null)
   const [currentProfile, setCurrentProfile] = useState("")
-  const inputRef = useRef()
   const divRef = useRef()
   const {user, allUsers} = useSelector(state => state.auth)
-  const {messages, isLoadng, isError, message} = useSelector(state => state.messages)
+  const {messages, isLoading, isError, message} = useSelector(state => state.messages)
+  const isSubmitDisabled = !newMessage;
 
   // Check if user is authorized
   useEffect(() => {  
@@ -99,7 +101,7 @@ function Chat() {
       }
     }
     
-  }, [activeUsers, allUsers, selectedUser])
+  }, [activeUsers, selectedUser])
 
   // Auto scroll conversation container
   useEffect(() => {
@@ -115,8 +117,7 @@ function Chat() {
     
     if (selectedUserId) {
       dispatch(getMessages(selectedUserId))
-    }
-    
+    }    
   }, [selectedUserId])
 
   // Update active/connected users array
@@ -134,17 +135,6 @@ function Chat() {
     }
   }
 
-  // Generate room name
-  function generateUniqueRoomName(id1, id2) {
-    // Sort the IDs alphabetically
-    const sortedIds = [id1, id2].sort();
-  
-    // Concatenate the sorted IDs to create a unique room name
-    const roomName = sortedIds.join('-');
-  
-    return roomName;
-  }
-
   // Joint room with selected user/contact
   function joinRoom(selectedUser) {
     // Set selected user state and its corresponding ID
@@ -155,15 +145,14 @@ function Chat() {
     setCurrentRoom(roomName)
 
     socket.emit('joinRoom', roomName)
-    console.log(offlineUsers);
+    console.log(messages);
   }
 
   // Handle message submit
-  function handleSubmit(e) {
-    e.preventDefault();
+  function handleSubmit(e, newFile = null) {
+    e?.preventDefault();
 
-    // Focus on the input element when the message's sent
-    inputRef.current.focus()
+    if (newFile) console.log(newFile);
 
     const roomName = generateUniqueRoomName(selectedUserId, user.id)
     
@@ -172,7 +161,8 @@ function Chat() {
       time: Date.now(),
       sender: user.id,
       recipient: selectedUserId,
-      text: newMessage
+      text: newMessage ? newMessage : null,
+      file: newFile ? newFile : null,
     }
     // Send text to server
     socket.emit('newMessage', {roomName, messageData})
@@ -180,6 +170,20 @@ function Chat() {
     dispatch(createMessage(messageData))
     // Clear newMessage state
     setNewMessage('')
+  }
+
+  // Send file
+  async function sendFile(e) {
+    const file = e.target.files[0]
+    const base64 = await convertToBase64(file)
+    const newFile = {name: e.target.files[0].name, data: base64}
+    handleSubmit(null, newFile)
+  }
+
+  function handleLogout() {
+    dispatch(logout())
+    dispatch(reset());
+    navigate('/')
   }
 
   // Remove duplicate messages
@@ -206,7 +210,7 @@ function Chat() {
               </div>
             </nav>   
           </div>
-          <div className="icons">
+          <div onClick={handleLogout} className="icons">
             <BiLogOut color="777A7E" size={28}/>
           </div>
                
@@ -253,13 +257,15 @@ function Chat() {
       <section className="bg-blue-100 w-2/3 flex flex-col right">
         <div className="flex flex-col flex-grow">
           {!selectedUserId && (
-            <div className="flex h-full flex-grow items-center justify-center">
-              <div className="flex  items-center  gap-2 text-gray-300"><FaArrowLeftLong/> Select a contact to start conversng</div>
-            </div>
+          <div className="flex flex-grow items-center justify-center">
+            <div className="flex  items-center  gap-2 text-gray-300"><FaArrowLeftLong/> Select a contact to start conversng</div>
+          </div>
           )}
+
           {!!selectedUserId && ( 
-            <>  
-            <div className="details">
+          <div className="conversation-container">  
+            {/* USER DETAILS */}
+            <div className="user-details">
               <div className="profile">
                 <Avatar 
                   profileExists={true}
@@ -276,7 +282,7 @@ function Chat() {
                   placeholder="Search..."
                 />
               </form>
-             
+            
               <div className="calls">
                 <div className="icons">
                   <IoSearch color="#7d8da1" size={22}/>
@@ -287,45 +293,44 @@ function Chat() {
               </div>
             </div>  
 
-            {/* Messages */}
-            <div  className="relative h-full">  
-              <div ref={divRef} className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2">
-              {uniqueMessages.map(message => (
+            {/* Messages */} 
+            <div ref={divRef} className="flex-grow overflow-y-scroll">
+            {uniqueMessages.map((message, index) => {
+              const prevMsg = index > 0 ? messages[index - 1] : null;
+              return (
                 <Message 
                   key={message.id}
                   message={message}
+                  prevMsg={prevMsg}
                   senderName={message.sender === user.id ? user.username : selectedUser.username}
-                  />
-              ))}
-              </div>
+                />
+              )                
+              })}
             </div>
-            </>
+
+            {/* SEND FORM */}
+            <form onSubmit={handleSubmit} className="send-form" >
+              <label htmlFor="file"><IoAttachOutline size={24}/></label>
+              <input 
+                type="file" 
+                name="file" 
+                id="file" 
+                accept='.jpeg, .png, .jpg'
+                onChange={sendFile}/>
+              <input 
+                type="text"
+                value={newMessage}
+                onChange={(e) => sendFile(e)}
+                placeholder="Type your message here"
+                />
+              <button disabled={isSubmitDisabled}>
+                <IoSendSharp color="#4299e1" size={25} />
+              </button>
+            </form>
+          </div>
             
           )}
-        </div>
-
-        {/* SEND FORM */}
-        {!!selectedUserId && (
-          <form onSubmit={handleSubmit} className="send-form" >
-            <label htmlFor="file"><IoAttachOutline size={24}/></label>
-            <input 
-              type="file" 
-              name="file" 
-              id="file" 
-              accept='.jpeg, .png, .jpg'/>
-            <input 
-              type="text"
-              value={newMessage}
-              ref={inputRef}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type your message here"
-              />
-            <button>
-              <IoSendSharp color="#4299e1" size={25} />
-            </button>
-        </form>
-        )}    
-        
+        </div>        
       </section>
     </div>
   </>

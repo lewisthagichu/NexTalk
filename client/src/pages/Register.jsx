@@ -72,7 +72,6 @@ return (
                         id="profile-picture"
                         accept='.jpeg, .png, .jpg'
                         onChange={(e) => handleProfileChange(e)}
-                        required
                     />
                 </div>
                 <div className="form-group">
