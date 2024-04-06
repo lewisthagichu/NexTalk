@@ -35,6 +35,18 @@ const createMessage = asyncHandler(async (req, res) => {
   res.status(200).json(newMessage);
 });
 
+// @desc Create message
+// @route POST /api/messages
+// @access Private
+const uploadFile = asyncHandler(async (req, res) => {
+  if (!req.body.text) {
+    res.status(400);
+    throw new Error('Empty message');
+  }
+
+  console.log(req.body);
+});
+
 // @desc Get messages for selected user/contact
 // @route POST /api/messages/:id
 // @access Private
@@ -60,4 +72,4 @@ const getMessages = asyncHandler(async (req, res) => {
   res.status(200).json(messages);
 });
 
-module.exports = { createMessage, getMessages };
+module.exports = { createMessage, uploadFile, getMessages };

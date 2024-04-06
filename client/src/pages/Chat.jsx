@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-unknown-property */
 import { useDispatch, useSelector } from "react-redux"
 import { useState, useEffect, useRef } from "react"
@@ -9,7 +10,7 @@ import { BiLogOut } from "react-icons/bi";
 import {uniqBy} from 'lodash'
 import io from 'socket.io-client'
 import { reset, getUsers, logout } from "../features/auth/authSlice"
-import { createMessage, getMessages } from "../features/messages/messagesSlice"
+import { createMessage, createFile, getMessages } from "../features/messages/messagesSlice"
 import Avatar from "../components/Avatar";
 import Contacts from "../components/Contacts"
 import Message from "../components/Message";
@@ -24,31 +25,24 @@ function Chat() {
   const [activeUsers, setActiveUsers] = useState([])
   const [offlineUsers, setOfflineUsers] = useState([])
   const [selectedUser, setSelectedUser] = useState(null)
-  const [selectedUserId, setSelectedUserId] = useState(null)
   const [isOnline, setIsOnline] = useState(null)
   const [newMessage, setNewMessage] = useState('')
-  const [currentRoom, setCurrentRoom] = useState(null)
   const [currentProfile, setCurrentProfile] = useState("")
+  const [currentRoom, setCurrentRoom] = useState(null)
+  const currentRoomRef = useRef(currentRoom)
   const divRef = useRef()
   const {user, allUsers} = useSelector(state => state.auth)
-  const {messages, isLoading, isError, message} = useSelector(state => state.messages)
+  const {messages} = useSelector(state => state.messages)
   const isSubmitDisabled = !newMessage;
 
-  // Check if user is authorized
+  // Proceed with the rest of the component logic only if the user is authenticated
   useEffect(() => {  
     if (!user) {
         navigate('/register');
-    } 
-  }, [ user, navigate])
-
-
-  useEffect(()=> {
-    // Proceed with the rest of the component logic only if the user is authenticated
-    if (user) {
-      // Make a socket connection
+    } else [
       connectSocket()
-  }
-  }, [])
+    ]
+  }, [ user, navigate])  
   
   // Connect to server
   function connectSocket() {
@@ -68,12 +62,13 @@ function Chat() {
         updateActiveUsers(connectedUsers)
       }); 
 
-      // Receive message
-      socket.on('message', ({roomName, messageData}) => {
-        if (currentRoom === roomName) {
-        dispatch(createMessage(messageData));
+      socket.on('message', ({ messageRoom, messageData }) => {
+        let currentRoom = currentRoomRef.current
+        if (currentRoom === messageRoom) {
+          dispatch(createMessage(messageData)); 
         }
-      })
+      });
+
 
       // Try reconnecting incase of a disconnect
       socket.on('disconnect', () => {
@@ -106,19 +101,15 @@ function Chat() {
   // Auto scroll conversation container
   useEffect(() => {
     const div = divRef.current
-
-    if (div) {
-      div.scrollTop = div.scrollHeight
-    }
+    if (div) div.scrollTop = div.scrollHeight
   }, [messages])
 
   // Get all messages when a contact is clicked
   useEffect(() => {
-    
-    if (selectedUserId) {
-      dispatch(getMessages(selectedUserId))
+    if (selectedUser) {
+      dispatch(getMessages(selectedUser.id))
     }    
-  }, [selectedUserId])
+  }, [selectedUser])
 
   // Update active/connected users array
   function updateActiveUsers(users) {
@@ -131,43 +122,52 @@ function Chat() {
       const connectedUsersExclMe = connectedUsers.filter(connectedUser => connectedUser.id !== user.id);
 
       setActiveUsers(connectedUsersExclMe);
-
     }
   }
 
   // Joint room with selected user/contact
   function joinRoom(selectedUser) {
-    // Set selected user state and its corresponding ID
-    setSelectedUser(selectedUser);
-    setSelectedUserId(selectedUser.id);
+    // Clear newMessage state
+    setNewMessage('')
 
     const roomName = generateUniqueRoomName(user.id, selectedUser.id)
     setCurrentRoom(roomName)
+    currentRoomRef.current = roomName
 
-    socket.emit('joinRoom', roomName)
-    console.log(messages);
+    // Set selected user state
+    setSelectedUser(selectedUser);
+
+    // Send joinRoom event to socketIO server
+    socket.emit('joinRoom', roomName)    
   }
 
   // Handle message submit
   function handleSubmit(e, newFile = null) {
     e?.preventDefault();
-
-    if (newFile) console.log(newFile);
-
-    const roomName = generateUniqueRoomName(selectedUserId, user.id)
-    
+   
     // Message data
     const messageData = {
       time: Date.now(),
       sender: user.id,
-      recipient: selectedUserId,
-      text: newMessage ? newMessage : null,
-      file: newFile ? newFile : null,
+      recipient: selectedUser.id,
+      text: newMessage === '' ? null : newMessage,
+      file: newFile || null,
     }
-    // Send text to server
-    socket.emit('newMessage', {roomName, messageData})
-    // Update messages array
-    dispatch(createMessage(messageData))
+
+    const messageRoom = generateUniqueRoomName(user.id, selectedUser.id)
+
+    // Send text to socketIO server
+    socket.emit('newMessage', {messageRoom, messageData})
+
+
+    // Send text to controller
+    if (newFile) {
+      dispatch(createFile(messageData));
+    } else {
+      dispatch(createMessage(messageData));
+    }
+     
+
     // Clear newMessage state
     setNewMessage('')
   }
@@ -235,7 +235,7 @@ function Chat() {
                 key={user.id}
                 selectedUser={user}
                 joinRoom={joinRoom}
-                selected={user.id === selectedUserId}  
+                selected={user.id === selectedUser?.id}  
                 online={true}
               />
             ))}
@@ -244,7 +244,7 @@ function Chat() {
                 key={user.id}
                 selectedUser={user}
                 joinRoom={joinRoom}
-                selected={user.id === selectedUserId} 
+                selected={user.id === selectedUser?.id} 
                 online={false}
               />
             ))}
@@ -256,13 +256,13 @@ function Chat() {
       {/* Right */}
       <section className="bg-blue-100 w-2/3 flex flex-col right">
         <div className="flex flex-col flex-grow">
-          {!selectedUserId && (
+          {!selectedUser && (
           <div className="flex flex-grow items-center justify-center">
             <div className="flex  items-center  gap-2 text-gray-300"><FaArrowLeftLong/> Select a contact to start conversng</div>
           </div>
           )}
 
-          {!!selectedUserId && ( 
+          {!!selectedUser && ( 
           <div className="conversation-container">  
             {/* USER DETAILS */}
             <div className="user-details">
@@ -320,7 +320,7 @@ function Chat() {
               <input 
                 type="text"
                 value={newMessage}
-                onChange={(e) => sendFile(e)}
+                onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type your message here"
                 />
               <button disabled={isSubmitDisabled}>

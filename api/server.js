@@ -4,7 +4,6 @@ const colors = require('colors');
 const cors = require('cors');
 const http = require('http');
 const socketio = require('socket.io');
-const cookieParser = require('cookie-parser');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const { socketMiddleware } = require('./middleware/socketMiddleware');
 const Message = require('./models/messageModel');
@@ -67,14 +66,14 @@ io.on('connection', (socket) => {
   });
 
   // Receive new text message from client
-  socket.on('newMessage', async ({ roomName, messageData }) => {
-    const { text, file } = messageData;
+  socket.on('newMessage', async ({ messageRoom, messageData }) => {
+    const { text } = messageData;
 
     // Ensure message is not empty
-    if (roomName && (text || file)) {
+    if (messageRoom && text) {
       // Return message to client
-      io.to(roomName).emit('message', {
-        roomName,
+      socket.broadcast.to(messageRoom).emit('message', {
+        messageRoom,
         messageData,
       });
     }

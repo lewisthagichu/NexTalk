@@ -28,6 +28,25 @@ export const createMessage = createAsyncThunk(
   }
 );
 
+// Create/send new file
+export const createFile = createAsyncThunk(
+  'files/create',
+  async (messageData, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.user.token;
+      return messagesService.createFile(messageData, token);
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 // Get all messages for selected user
 export const getMessages = createAsyncThunk(
   'messages/getAll',
@@ -64,6 +83,19 @@ export const messagesSlice = createSlice({
         state.messages.push(action.payload);
       })
       .addCase(createMessage.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.serverMessage = action.payload;
+      })
+      .addCase(createFile.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(createFile.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.messages.push(action.payload);
+      })
+      .addCase(createFile.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.serverMessage = action.payload;

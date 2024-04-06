@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_URL = '/api/messages/';
 
-// Sent create message request to server
+// Post create message request to server
 const createMessage = async (messageData, token) => {
   const config = {
     headers: {
@@ -11,6 +11,19 @@ const createMessage = async (messageData, token) => {
   };
 
   const { data } = await axios.post(API_URL, messageData, config);
+
+  return data;
+};
+
+// Post create file request to server
+const createFile = async (messageData, token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  const { data } = await axios.post(API_URL + 'uploads', messageData, config);
 
   return data;
 };
@@ -30,6 +43,7 @@ const getMessages = async (selectedUserId, token) => {
 
 const messagesService = {
   createMessage,
+  createFile,
   getMessages,
 };
 
