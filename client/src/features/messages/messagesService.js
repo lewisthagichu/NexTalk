@@ -15,15 +15,15 @@ const createMessage = async (messageData, token) => {
   return data;
 };
 
-// Post create file request to server
-const createFile = async (messageData, token) => {
+// Post upload file request to server
+const uploadFile = async (formData, token) => {
   const config = {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   };
 
-  const { data } = await axios.post(API_URL + 'uploads', messageData, config);
+  const { data } = await axios.post(API_URL + 'upload', formData, config);
 
   return data;
 };
@@ -43,7 +43,7 @@ const getMessages = async (selectedUserId, token) => {
 
 const messagesService = {
   createMessage,
-  createFile,
+  uploadFile,
   getMessages,
 };
 

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-unknown-property */
 import { useDispatch, useSelector } from "react-redux"
 import { useState, useEffect, useRef } from "react"
@@ -10,13 +9,12 @@ import { BiLogOut } from "react-icons/bi";
 import {uniqBy} from 'lodash'
 import io from 'socket.io-client'
 import { reset, getUsers, logout } from "../features/auth/authSlice"
-import { createMessage, createFile, getMessages } from "../features/messages/messagesSlice"
+import { createMessage, uploadFile, getMessages, addMessage } from "../features/messages/messagesSlice"
 import Avatar from "../components/Avatar";
 import Contacts from "../components/Contacts"
 import Message from "../components/Message";
 import Footer from '../components/Footer'
 import generateUniqueRoomName from '../utils/generateUniqueRoomName'
-import convertToBase64 from "../utils/converttobase64";
 
 function Chat() {
   const dispatch = useDispatch()
@@ -32,18 +30,25 @@ function Chat() {
   const currentRoomRef = useRef(currentRoom)
   const divRef = useRef()
   const {user, allUsers} = useSelector(state => state.auth)
-  const {messages} = useSelector(state => state.messages)
+  const {messages, isError, serverMessage} = useSelector(state => state.messages)
   const isSubmitDisabled = !newMessage;
 
   // Proceed with the rest of the component logic only if the user is authenticated
-  useEffect(() => {  
+  useEffect(() => {
     if (!user) {
         navigate('/register');
-    } else [
-      connectSocket()
-    ]
-  }, [ user, navigate])  
-  
+    } else {
+      dispatch(getUsers())
+    }
+          
+  }, [user, dispatch, navigate])    
+
+  useEffect(() => {  
+    if (allUsers.length > 0) {
+        connectSocket()
+    }          
+  }, [allUsers])  
+
   // Connect to server
   function connectSocket() {
     const { token } = user;
@@ -62,13 +67,14 @@ function Chat() {
         updateActiveUsers(connectedUsers)
       }); 
 
-      socket.on('message', ({ messageRoom, messageData }) => {
+      // Recipient gets message from socketIO server
+      socket.on('message', ({ messageRoom, messageData, fileData }) => {
         let currentRoom = currentRoomRef.current
         if (currentRoom === messageRoom) {
-          dispatch(createMessage(messageData)); 
+          const data = fileData ? fileData : messageData
+          dispatch(addMessage(data))
         }
       });
-
 
       // Try reconnecting incase of a disconnect
       socket.on('disconnect', () => {
@@ -80,23 +86,18 @@ function Chat() {
 
   // Get offline users and check if they are online
   useEffect(() => {
-    if (user) {
-      dispatch(getUsers())
+    if (allUsers) {
+      // dispatch(getUsers())
+      console.log(allUsers);
 
-      const inactiveUsers = allUsers.filter(contact => {
-        return contact.id !== user.id && !activeUsers.some(activeUser => activeUser.id === contact.id);
-      });
+      // const inactiveUsers = allUsers.filter(contact => {
+      //   return contact.id !== user.id && !activeUsers.some(activeUser => activeUser.id === contact.id);
+      // });
 
-      setOfflineUsers(inactiveUsers);
-
-      if (selectedUser) {
-        const isOnline = activeUsers.some(item => item.id === selectedUser.id && item.username === selectedUser.username);
-
-        setIsOnline(isOnline);
-      }
+      // setOfflineUsers(inactiveUsers);
     }
     
-  }, [activeUsers, selectedUser])
+  }, [allUsers])
 
   // Auto scroll conversation container
   useEffect(() => {
@@ -107,9 +108,13 @@ function Chat() {
   // Get all messages when a contact is clicked
   useEffect(() => {
     if (selectedUser) {
+      const isOnline = activeUsers.some(item => item.id === selectedUser.id && item.username === selectedUser.username);
+
+      setIsOnline(isOnline);
+
       dispatch(getMessages(selectedUser.id))
     }    
-  }, [selectedUser])
+  }, [selectedUser, activeUsers, dispatch])
 
   // Update active/connected users array
   function updateActiveUsers(users) {
@@ -142,42 +147,55 @@ function Chat() {
   }
 
   // Handle message submit
-  function handleSubmit(e, newFile = null) {
+  function handleSubmit(e, formData = null) {
     e?.preventDefault();
-   
-    // Message data
-    const messageData = {
+
+    // Data accompaning each text
+    const messageRoom = generateUniqueRoomName(user.id, selectedUser.id)
+    const data = {
       time: Date.now(),
       sender: user.id,
       recipient: selectedUser.id,
-      text: newMessage === '' ? null : newMessage,
-      file: newFile || null,
     }
+    const {time, sender, recipient} = data
 
-    const messageRoom = generateUniqueRoomName(user.id, selectedUser.id)
+    if (!formData) {   
+      // Message data
+      const messageData = {
+        id: Date.now(),
+        time,
+        sender,
+        recipient,
+        text: newMessage,
+        file: null,
+      }
 
-    // Send text to socketIO server
-    socket.emit('newMessage', {messageRoom, messageData})
+      // Send text to server
+      socket.emit('newMessage', {messageRoom, messageData})
+      dispatch(createMessage(messageData))
 
-
-    // Send text to controller
-    if (newFile) {
-      dispatch(createFile(messageData));
+      // Clear newMessage state
+      setNewMessage('')
     } else {
-      dispatch(createMessage(messageData));
-    }
-     
+        formData.append('time', time)
+        formData.append('sender', sender)
+        formData.append('recipient', recipient)
+        formData.append('text', null)
+        formData.append('messagroom', messageRoom)
 
-    // Clear newMessage state
-    setNewMessage('')
-  }
+        // Send file to server
+        const messageData = {text: null}
+        socket.emit('newMessage', {messageRoom, messageData})
+        dispatch(uploadFile(formData));
+    }    
+}
 
   // Send file
   async function sendFile(e) {
     const file = e.target.files[0]
-    const base64 = await convertToBase64(file)
-    const newFile = {name: e.target.files[0].name, data: base64}
-    handleSubmit(null, newFile)
+    const formData = new FormData()
+    formData.append('file', file)
+    handleSubmit(null, formData)
   }
 
   function handleLogout() {
@@ -188,6 +206,11 @@ function Chat() {
 
   // Remove duplicate messages
   const uniqueMessages = uniqBy(messages, 'time')
+
+  if (!user) {
+    // If no user, navigate to the register page and return null to prevent rendering anything
+    return null;
+  }
 
   return (
     <>
@@ -230,7 +253,7 @@ function Chat() {
           </div>
           {/* Display active and offline users */}
           <div className="contacts">
-            {activeUsers.map(user => (
+            {allUsers.map(user => (
               <Contacts 
                 key={user.id}
                 selectedUser={user}
@@ -294,7 +317,7 @@ function Chat() {
             </div>  
 
             {/* Messages */} 
-            <div ref={divRef} className="flex-grow overflow-y-scroll">
+            <div ref={divRef} className="flex-grow overflow-y-scroll relative">
             {uniqueMessages.map((message, index) => {
               const prevMsg = index > 0 ? messages[index - 1] : null;
               return (

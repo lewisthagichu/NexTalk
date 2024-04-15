@@ -10,11 +10,13 @@ const Message = require('./models/messageModel');
 const { userJoin, getUsers, userLeave } = require('./utils/connectedUsers');
 const { deleteAll } = require('./utils/clearDB');
 const connectDB = require('./config/db');
+const { emitter } = require('./controllers/messageController');
 
 // Connect to the database
 connectDB();
 
 const app = express();
+app.use('/uploads', express.static(__dirname + '/uploads'));
 
 // CORS middleware
 app.use(
@@ -27,9 +29,9 @@ app.use(
 );
 
 // Increase limit for JSON payloads
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '15mb' }));
 // Increase limit for URL-encoded payloads
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.urlencoded({ limit: '15mb', extended: true }));
 
 // Routes
 app.use('/api/users', require('./routes/userRoute'));
@@ -67,16 +69,25 @@ io.on('connection', (socket) => {
 
   // Receive new text message from client
   socket.on('newMessage', async ({ messageRoom, messageData }) => {
-    const { text } = messageData;
+    let fileData;
 
-    // Ensure message is not empty
-    if (messageRoom && text) {
-      // Return message to client
+    if (messageData.text) {
       socket.broadcast.to(messageRoom).emit('message', {
         messageRoom,
         messageData,
       });
+
+      console.log('message sent');
     }
+
+    emitter.on('fileUploaded', (newFile) => {
+      fileData = newFile;
+      socket.broadcast.to(messageRoom).emit('message', {
+        messageRoom,
+        fileData,
+      });
+      console.log('file sent');
+    });
   });
 
   // Send users to everyone connected

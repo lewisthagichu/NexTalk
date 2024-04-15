@@ -1,5 +1,9 @@
 const asyncHandler = require('express-async-handler');
 const Message = require('../models/messageModel');
+const EventEmitter = require('events');
+
+// Create an event emitter
+const emitter = new EventEmitter();
 
 // @desc Create message
 // @route POST /api/messages
@@ -15,11 +19,13 @@ const createMessage = asyncHandler(async (req, res) => {
     sender: req.body.sender,
     recipient: req.body.recipient,
     text: req.body.text,
+    file: null,
     time: req.body.time,
   });
 
   // Destructure properties directly
-  const { _id, sender, recipient, text, time, createdAt, updatedAt } = result;
+  const { _id, sender, recipient, text, file, time, createdAt, updatedAt } =
+    result;
 
   // Convert ObjectId instances to strings
   const newMessage = {
@@ -27,6 +33,7 @@ const createMessage = asyncHandler(async (req, res) => {
     sender: sender.toString(),
     recipient: recipient.toString(),
     text,
+    file,
     time,
     createdAt,
     updatedAt,
@@ -35,16 +42,51 @@ const createMessage = asyncHandler(async (req, res) => {
   res.status(200).json(newMessage);
 });
 
-// @desc Create message
-// @route POST /api/messages
+// @desc Upload file
+// @route POST /api/messages/upload
 // @access Private
 const uploadFile = asyncHandler(async (req, res) => {
-  if (!req.body.text) {
+  if (!req.body) {
     res.status(400);
     throw new Error('Empty message');
   }
 
-  console.log(req.body);
+  // Check if multer detected a file size limit error
+  if (req.file && req.file.size === 0) {
+    res.status(400);
+    throw new Error('File size exceeds the limit (15 MB');
+  }
+
+  // Create a new file
+  const result = await Message.create({
+    sender: req.body.sender,
+    recipient: req.body.recipient,
+    text: null,
+    file: req.file.filename,
+    time: req.body.time,
+  });
+
+  // Destructure properties directly
+  const { _id, sender, recipient, text, file, time, createdAt, updatedAt } =
+    result;
+
+  // Convert ObjectId instances to strings
+  const newFile = {
+    id: _id.toString(),
+    sender: sender.toString(),
+    recipient: recipient.toString(),
+    text,
+    file,
+    time,
+    createdAt,
+    updatedAt,
+  };
+
+  // Emit an event with the filename
+  emitter.emit('fileUploaded', newFile);
+
+  // respond to request
+  res.status(200).json(newFile);
 });
 
 // @desc Get messages for selected user/contact
@@ -64,6 +106,7 @@ const getMessages = asyncHandler(async (req, res) => {
     sender: message.sender.toString(),
     recipient: message.recipient.toString(),
     text: message.text,
+    file: message.file,
     time: message.time,
     createdAt: message.createdAt,
     updatedAt: message.updatedAt,
@@ -72,4 +115,8 @@ const getMessages = asyncHandler(async (req, res) => {
   res.status(200).json(messages);
 });
 
-module.exports = { createMessage, uploadFile, getMessages };
+function getCreatedFile(file) {
+  return file;
+}
+
+module.exports = { createMessage, uploadFile, getMessages, emitter };

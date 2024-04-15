@@ -14,7 +14,7 @@ function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [profilePicture, setProfilePicture] = useState('');
+  const [profilePicture, setProfilePicture] = useState(null);
   const {user, isSuccess, isLoading, isError, message} = useSelector(state => state.auth)
   
   const dispatch = useDispatch()
@@ -40,6 +40,11 @@ async function handleProfileChange(e) {
 // Function to handle form submission
 function handleSubmit(e) {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+        toast.error("Passwords do not match");
+        return;
+    }
 
     const userData = {username, password, profilePicture}
 

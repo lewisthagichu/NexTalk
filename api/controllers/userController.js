@@ -6,7 +6,7 @@ const bycrypt = require('bcryptjs');
 // @desc Register new user
 // @route POST /api/users/
 // @access Public
-const registerUser = asyncHandler(async (req, res) => {
+const register = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -17,7 +17,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // Check if the user already exists
   const userExists = await User.findOne({ username });
   if (userExists) {
-    res.status(401);
+    res.status(409);
     throw new Error('Username already taken');
   }
 
@@ -33,29 +33,30 @@ const registerUser = asyncHandler(async (req, res) => {
     const token = generateToken(createdUser._id, createdUser.username);
     res.status(201).json({ id: createdUser._id, username, token });
   } else {
-    res.status(401);
-    throw new Error('Invalid username or password');
+    res.status(500);
+    throw new Error('Internal Server Error');
   }
 });
 
 // @desc Login existing account
 // @route POST /api/users/login
 // @access Public
-const loginUser = asyncHandler(async (req, res) => {
+const login = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    res.status(401);
+    res.status(400);
     throw new Error('Invalid username or password');
   }
 
   const user = await User.findOne({ username });
 
-  if (user && bycrypt.compare(user.password, password)) {
-    res.status(201).json({
+  if (user && (await bycrypt.compare(password, user.password))) {
+    const token = generateToken(user._id, user.username);
+    res.status(200).json({
       id: user.id,
       username,
-      token: generateToken(user._id, user.username),
+      token,
     });
   } else {
     res.status(401);
@@ -88,7 +89,7 @@ function generateToken(id, username) {
 }
 
 module.exports = {
-  registerUser,
-  loginUser,
+  register,
+  login,
   getUsers,
 };

@@ -29,12 +29,12 @@ export const createMessage = createAsyncThunk(
 );
 
 // Create/send new file
-export const createFile = createAsyncThunk(
+export const uploadFile = createAsyncThunk(
   'files/create',
-  async (messageData, thunkAPI) => {
+  async (formData, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
-      return messagesService.createFile(messageData, token);
+      return messagesService.uploadFile(formData, token);
     } catch (error) {
       const message =
         (error.response &&
@@ -71,6 +71,12 @@ export const messagesSlice = createSlice({
   initialState,
   reducers: {
     reset: (state) => initialState,
+    addMessage: (state, action) => {
+      return {
+        ...state,
+        messages: [...state.messages, action.payload], // Add the new message to the array
+      };
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -87,15 +93,15 @@ export const messagesSlice = createSlice({
         state.isError = true;
         state.serverMessage = action.payload;
       })
-      .addCase(createFile.pending, (state) => {
+      .addCase(uploadFile.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(createFile.fulfilled, (state, action) => {
+      .addCase(uploadFile.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
         state.messages.push(action.payload);
       })
-      .addCase(createFile.rejected, (state, action) => {
+      .addCase(uploadFile.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.serverMessage = action.payload;
@@ -116,5 +122,5 @@ export const messagesSlice = createSlice({
   },
 });
 
-export const { reset } = messagesSlice.actions;
+export const { reset, addMessage } = messagesSlice.actions;
 export default messagesSlice.reducer;

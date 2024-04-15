@@ -233,6 +233,12 @@ section.right {
 }
 
 /* MESSAGE CONTAINER */
+.day-separator {
+    position: fixed;
+    top: 4rem;
+    left: 66vw;
+}
+
 .message-container {
     margin: 1.1rem;
 }
