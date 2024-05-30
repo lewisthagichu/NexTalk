@@ -67,7 +67,7 @@ io.on('connection', (socket) => {
     socket.join(roomName);
   });
 
-  // Receive new text message from client
+  // Receive new message from client
   socket.on('newMessage', async ({ messageRoom, messageData }) => {
     let fileData;
 
@@ -88,6 +88,13 @@ io.on('connection', (socket) => {
       });
       console.log('file sent');
     });
+  });
+
+  // // Receive and transmit notifications
+  socket.on('newNotification', ({ messageRoom, data }) => {
+    socket.broadcast
+      .to(messageRoom)
+      .emit('notification', { messageRoom, data });
   });
 
   // Send users to everyone connected

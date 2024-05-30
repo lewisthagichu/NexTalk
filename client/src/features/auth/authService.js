@@ -34,6 +34,21 @@ const getUsers = async (token) => {
   return data;
 };
 
+// Regenerate new token
+const regenerateToken = async (token) => {
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  const { data } = await axios.post(API_URL + 'newToken', config);
+
+  if (data) {
+    localStorage.setItem('user', JSON.stringify(data));
+  }
+  return data;
+};
+
 // Logout
 const logout = () => {
   localStorage.removeItem('user');
@@ -44,6 +59,7 @@ const authService = {
   login,
   getUsers,
   logout,
+  regenerateToken,
 };
 
 export default authService;

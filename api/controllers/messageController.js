@@ -115,8 +115,4 @@ const getMessages = asyncHandler(async (req, res) => {
   res.status(200).json(messages);
 });
 
-function getCreatedFile(file) {
-  return file;
-}
-
 module.exports = { createMessage, uploadFile, getMessages, emitter };

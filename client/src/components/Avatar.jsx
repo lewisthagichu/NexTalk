@@ -31,7 +31,7 @@ function Avatar({ userId, username, online, profileExists }) {
   }
 
   return (
-    <>
+    <div>
       {profileExists && (
         <div>
           <img 
@@ -54,7 +54,7 @@ function Avatar({ userId, username, online, profileExists }) {
       )} 
 
       {modal && <ProfileModal toggleModal={toggleModal} />}
-    </>
+    </div>
   );
 }
 

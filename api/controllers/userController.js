@@ -68,7 +68,14 @@ const login = asyncHandler(async (req, res) => {
 // @route GET /api/users/
 // @access Private
 const getUsers = asyncHandler(async (req, res) => {
-  const users = await User.find({}, { _id: 1, username: 1 });
+  // Get the current user's ID from req.user.id
+  const currentUserId = req.user.id;
+
+  // Query the database to find all users except the current user
+  const users = await User.find(
+    { _id: { $ne: currentUserId } },
+    { _id: 1, username: 1 }
+  );
 
   // Map through the array and rename "_id" to "id" in each user object
   const allUsers = users.map((user) => {
@@ -79,6 +86,32 @@ const getUsers = asyncHandler(async (req, res) => {
   });
 
   res.status(200).json(allUsers);
+});
+
+// Regenerate new token
+const checkToken = asyncHandler(async (req, res) => {
+  const token =
+    req.headers.authorization && req.headers.authorization.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Not authorized, no token' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password');
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: 'Not authorized, user not found' });
+    }
+
+    const newToken = generateToken(user._id, user.username);
+    res.status(200).json({ newToken });
+  } catch (err) {
+    res.status(401).json({ message: 'Token expired or invalid' });
+  }
 });
 
 // Generate a jwt token
@@ -92,4 +125,5 @@ module.exports = {
   register,
   login,
   getUsers,
+  checkToken,
 };

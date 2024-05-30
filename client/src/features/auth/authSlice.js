@@ -12,6 +12,25 @@ const initialState = {
   message: '',
 };
 
+// Regenerate token
+export const regeneteToken = createAsyncThunk(
+  'auth/regenerateToken',
+  async (_, thunkAPI) => {
+    try {
+      const token = thunkAPI.getState().auth.user.token;
+      return await authService.regenerateToken(token);
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString(); // get error message from server
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 // Register new user
 export const register = createAsyncThunk(
   'auth/register',
@@ -123,6 +142,19 @@ export const authSlice = createSlice({
         state.allUsers = action.payload;
       })
       .addCase(getUsers.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+      })
+      .addCase(regeneteToken.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(regeneteToken.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.user.token = action.payload;
+      })
+      .addCase(regeneteToken.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
