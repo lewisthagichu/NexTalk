@@ -13,9 +13,9 @@ const socketMiddleware = (socket, next) => {
         throw new Error('Invalid token');
       }
 
-      const { id, username } = jwt.verify(token, process.env.JWT_SECRET);
+      const { _id, username } = jwt.verify(token, process.env.JWT_SECRET);
 
-      socket.userId = id;
+      socket.userId = _id;
       socket.username = username;
     }
 

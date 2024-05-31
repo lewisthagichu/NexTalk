@@ -11,6 +11,7 @@ const { userJoin, getUsers, userLeave } = require('./utils/connectedUsers');
 const { deleteAll } = require('./utils/clearDB');
 const connectDB = require('./config/db');
 const { emitter } = require('./controllers/messageController');
+const User = require('./models/userModel');
 
 // Connect to the database
 connectDB();

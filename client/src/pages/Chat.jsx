@@ -1,21 +1,18 @@
 /* eslint-disable react/no-unknown-property */
 import { useDispatch, useSelector } from 'react-redux';
 import { useState, useEffect, useRef, useContext } from 'react';
+import { ChatContext } from '../context/ChatContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  IoChatboxEllipses,
   IoCall,
   IoSearch,
   IoSendSharp,
   IoAttachOutline,
 } from 'react-icons/io5';
 import { FaArrowLeftLong } from 'react-icons/fa6';
-import { MdGroupAdd } from 'react-icons/md';
-import { BiLogOut } from 'react-icons/bi';
 import { uniqBy } from 'lodash';
 import io from 'socket.io-client';
-import { ChatContext } from '../context/ChatContext';
-import { reset, getUsers, logout } from '../features/auth/authSlice';
+import { getUsers } from '../features/auth/authSlice';
 import {
   createMessage,
   uploadFile,
@@ -23,29 +20,37 @@ import {
   addMessage,
 } from '../features/messages/messagesSlice';
 import Avatar from '../components/Avatar';
-import Contacts from '../components/Contacts';
-import Message from '../components/Message';
-import Footer from '../components/Footer';
+import Sidebar from '../components/Sidebar/Sidebar';
 import generateUniqueRoomName from '../utils/generateUniqueRoomName';
+import Contacts from '../components/Contacts/Contacts';
+import Conversation from '../components/Conversation/Conversation';
 
 function Chat() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [socket, setSocket] = useState(null);
-  const [activeUsers, setActiveUsers] = useState([]);
-  const [offlineUsers, setOfflineUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [isOnline, setIsOnline] = useState(null);
-  const [newMessage, setNewMessage] = useState('');
-  const [currentProfile, setCurrentProfile] = useState('');
-  const [currentRoom, setCurrentRoom] = useState(null);
-  const currentRoomRef = useRef(currentRoom);
-  const divRef = useRef();
-  const { notifications, setNotifications } = useContext(ChatContext);
+
   const { user, allUsers } = useSelector((state) => state.auth);
   const { messages, isError, serverMessage } = useSelector(
     (state) => state.messages
   );
+
+  const {
+    setNotifications,
+    selectedUser,
+    setSelectedUser,
+    currentRoom,
+    setCurrentRoom,
+  } = useContext(ChatContext);
+
+  const [socket, setSocket] = useState(null);
+  const [activeUsers, setActiveUsers] = useState([]);
+  const [offlineUsers, setOfflineUsers] = useState([]);
+
+  const [isOnline, setIsOnline] = useState(null);
+  const [newMessage, setNewMessage] = useState('');
+
+  const currentRoomRef = useRef(currentRoom);
+
   const isSubmitDisabled = !newMessage;
 
   // Proceed with the rest of the component logic only if the user is authenticated
@@ -113,30 +118,25 @@ function Chat() {
       dispatch(getUsers());
 
       // const inactiveUsers = allUsers.filter(contact => {
-      //   return !activeUsers.some(activeUser => activeUser.id === contact.id);
+      //   return !activeUsers.some(activeUser => activeUser._id === contact.id);
       // });
 
       // setOfflineUsers(inactiveUsers);
     }
   }, [activeUsers, dispatch]);
 
-  // Auto scroll conversation container
-  useEffect(() => {
-    const div = divRef.current;
-    if (div) div.scrollTop = div.scrollHeight;
-  }, [messages]);
-
   // Get all messages when a contact is clicked
   useEffect(() => {
     if (selectedUser) {
       const isOnline = activeUsers.some(
         (item) =>
-          item.id === selectedUser.id && item.username === selectedUser.username
+          item.id === selectedUser._id &&
+          item.username === selectedUser.username
       );
 
       setIsOnline(isOnline);
 
-      dispatch(getMessages(selectedUser.id));
+      dispatch(getMessages(selectedUser._id));
     }
   }, [selectedUser, activeUsers, dispatch]);
 
@@ -150,7 +150,7 @@ function Chat() {
 
       // Exclude ourselves
       const connectedUsersExclMe = connectedUsers.filter(
-        (connectedUser) => connectedUser.id !== user.id
+        (connectedUser) => connectedUser._id !== user._id
       );
 
       setActiveUsers(connectedUsersExclMe);
@@ -159,10 +159,7 @@ function Chat() {
 
   // Joint room with selected user/contact
   function joinRoom(selectedUser) {
-    // Clear newMessage state
-    setNewMessage('');
-
-    const roomName = generateUniqueRoomName(user.id, selectedUser.id);
+    const roomName = generateUniqueRoomName(user._id, selectedUser._id);
     setCurrentRoom(roomName);
     currentRoomRef.current = roomName;
 
@@ -173,234 +170,24 @@ function Chat() {
     socket.emit('joinRoom', roomName);
   }
 
-  // Handle message submit
-  function handleSubmit(e, formData = null) {
-    e?.preventDefault();
-
-    // Data accompaning each text
-    const messageRoom = generateUniqueRoomName(user.id, selectedUser.id);
-    const data = {
-      time: Date.now(),
-      sender: user.id,
-      recipient: selectedUser.id,
-      isRead: false,
-    };
-    const { time, sender, recipient } = data;
-
-    if (!formData) {
-      // Message data
-      const messageData = {
-        id: Date.now(),
-        time,
-        sender,
-        recipient,
-        text: newMessage,
-        file: null,
-      };
-
-      // Send text to server
-      socket.emit('newMessage', { messageRoom, messageData });
-      dispatch(createMessage(messageData));
-
-      // Clear newMessage state
-      setNewMessage('');
-    } else {
-      formData.append('time', time);
-      formData.append('sender', sender);
-      formData.append('recipient', recipient);
-      formData.append('text', null);
-      formData.append('messagroom', messageRoom);
-
-      // Send file to server
-      const messageData = { text: null };
-      socket.emit('newMessage', { messageRoom, messageData });
-      dispatch(uploadFile(formData));
-    }
-
-    // Send notification to server
-    socket.emit('newNotification', { messageRoom, data });
-  }
-
-  // Send file
-  async function sendFile(e) {
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
-    handleSubmit(null, formData);
-  }
-
-  function handleLogout() {
-    dispatch(logout());
-    dispatch(reset());
-    navigate('/');
-  }
-
-  // Remove duplicate messages
-  const uniqueMessages = uniqBy(messages, 'time');
-
-  if (!user) {
-    // If no user, navigate to the register page and return null to prevent rendering anything
-    return null;
-  }
-
-  console.log(notifications);
-
   if (!user) return null;
 
   return (
     user && (
-      <>
-        <div className="flex h-screen">
-          <section className="bg-white w-1/3 flex left">
-            {/* Sidebar */}
-            <aside>
-              <div className="container">
-                <div className="profile">
-                  <Avatar profileExists={true} />
-                </div>
-                <nav>
-                  <div className="icons selected">
-                    <IoChatboxEllipses color="777A7E" size={28} />
-                  </div>
-                  <div className="icons">
-                    <MdGroupAdd color="777A7E" size={28} />
-                  </div>
-                </nav>
-              </div>
-              <div onClick={handleLogout} className="icons">
-                <BiLogOut color="777A7E" size={28} />
-              </div>
-            </aside>
+      <div className="flex h-screen">
+        <section className="bg-white w-1/3 flex left">
+          <Sidebar />
+          <Contacts
+            allUsers={allUsers}
+            offlineUsers={offlineUsers}
+            joinRoom={joinRoom}
+          />
+        </section>
 
-            <div className="contacts-container">
-              <div className="top">
-                <div className="icons">
-                  <IoSearch color="#7d8da1" size={22} />
-                </div>
-                <form
-                  className="search-bar chats active"
-                  onSubmit={handleSubmit}
-                >
-                  <input type="text" placeholder="Search contacts" />
-                </form>
-              </div>
-              {/* Display active and offline users */}
-              <div className="contacts">
-                {allUsers.map((user) => (
-                  <Contacts
-                    key={user.id}
-                    contact={user}
-                    joinRoom={joinRoom}
-                    selected={user.id === selectedUser?.id}
-                    online={true}
-                  />
-                ))}
-                {offlineUsers.map((user) => (
-                  <Contacts
-                    key={user.id}
-                    contact={user}
-                    joinRoom={joinRoom}
-                    selected={user.id === selectedUser?.id}
-                    online={false}
-                  />
-                ))}
-              </div>
-              <Footer />
-            </div>
-          </section>
-
-          {/* Right */}
-          <section className="bg-blue-100 w-2/3 flex flex-col right">
-            <div className="flex flex-col flex-grow">
-              {!selectedUser && (
-                <div className="flex flex-grow items-center justify-center">
-                  <div className="flex  items-center  gap-2 text-gray-300">
-                    <FaArrowLeftLong /> Select a contact to start conversng
-                  </div>
-                </div>
-              )}
-
-              {!!selectedUser && (
-                <div className="conversation-container">
-                  {/* USER DETAILS */}
-                  <div className="user-details">
-                    <div className="profile">
-                      <Avatar profileExists={true} />
-                      <div className="name">
-                        <small className="username">
-                          {selectedUser.username}
-                        </small>
-                        <small>{isOnline ? 'Online' : 'Offline'}</small>
-                      </div>
-                    </div>
-
-                    <form
-                      className="search-bar chat active"
-                      onSubmit={handleSubmit}
-                    >
-                      <input type="text" placeholder="Search..." />
-                    </form>
-
-                    <div className="calls">
-                      <div className="icons">
-                        <IoSearch color="#7d8da1" size={22} />
-                      </div>
-                      <div className="icons">
-                        <IoCall color="#7d8da1" size={20} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Messages */}
-                  <div
-                    ref={divRef}
-                    className="flex-grow overflow-y-scroll relative"
-                  >
-                    {uniqueMessages.map((message, index) => {
-                      const prevMsg = index > 0 ? messages[index - 1] : null;
-                      return (
-                        <Message
-                          key={message.id}
-                          message={message}
-                          prevMsg={prevMsg}
-                          senderName={
-                            message.sender === user.id
-                              ? user.username
-                              : selectedUser.username
-                          }
-                        />
-                      );
-                    })}
-                  </div>
-
-                  {/* SEND FORM */}
-                  <form onSubmit={handleSubmit} className="send-form">
-                    <label htmlFor="file">
-                      <IoAttachOutline size={24} />
-                    </label>
-                    <input
-                      type="file"
-                      name="file"
-                      id="file"
-                      accept=".jpeg, .png, .jpg"
-                      onChange={sendFile}
-                    />
-                    <input
-                      type="text"
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Type your message here"
-                    />
-                    <button disabled={isSubmitDisabled}>
-                      <IoSendSharp color="#4299e1" size={25} />
-                    </button>
-                  </form>
-                </div>
-              )}
-            </div>
-          </section>
-        </div>
-      </>
+        <section className="bg-blue-100 w-2/3 flex flex-col right">
+          <Conversation isOnline={isOnline ? 'Online' : 'Offline'} />
+        </section>
+      </div>
     )
   );
 }

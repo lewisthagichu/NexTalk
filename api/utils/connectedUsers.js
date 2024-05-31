@@ -2,9 +2,9 @@
 const users = [];
 
 // Add user when they connecct
-const userJoin = (id, username) => {
+const userJoin = (_id, username) => {
   const user = {
-    id,
+    _id,
     username,
   };
 
@@ -19,8 +19,8 @@ const getUsers = () => {
 };
 
 // Remove a disconnected user from the list
-function userLeave(id) {
-  const index = users.findIndex((user) => user.id === id);
+function userLeave(_id) {
+  const index = users.findIndex((user) => user._id === _id);
   if (index !== -1) {
     return users.splice(index, 1)[0];
   }

@@ -15,29 +15,13 @@ const createMessage = asyncHandler(async (req, res) => {
   }
 
   // Create a new message
-  const result = await Message.create({
+  const newMessage = await Message.create({
     sender: req.body.sender,
     recipient: req.body.recipient,
     text: req.body.text,
     file: null,
     time: req.body.time,
   });
-
-  // Destructure properties directly
-  const { _id, sender, recipient, text, file, time, createdAt, updatedAt } =
-    result;
-
-  // Convert ObjectId instances to strings
-  const newMessage = {
-    id: _id.toString(),
-    sender: sender.toString(),
-    recipient: recipient.toString(),
-    text,
-    file,
-    time,
-    createdAt,
-    updatedAt,
-  };
 
   res.status(200).json(newMessage);
 });
@@ -58,29 +42,13 @@ const uploadFile = asyncHandler(async (req, res) => {
   }
 
   // Create a new file
-  const result = await Message.create({
+  const newFile = await Message.create({
     sender: req.body.sender,
     recipient: req.body.recipient,
     text: null,
     file: req.file.filename,
     time: req.body.time,
   });
-
-  // Destructure properties directly
-  const { _id, sender, recipient, text, file, time, createdAt, updatedAt } =
-    result;
-
-  // Convert ObjectId instances to strings
-  const newFile = {
-    id: _id.toString(),
-    sender: sender.toString(),
-    recipient: recipient.toString(),
-    text,
-    file,
-    time,
-    createdAt,
-    updatedAt,
-  };
 
   // Emit an event with the filename
   emitter.emit('fileUploaded', newFile);
@@ -100,19 +68,7 @@ const getMessages = asyncHandler(async (req, res) => {
     recipient: { $in: [selectedUserId, myId] },
   }).sort({ createdAt: 1 });
 
-  // Convert ObjectId instances to strings
-  const messages = allMessages.map((message) => ({
-    id: message._id.toString(),
-    sender: message.sender.toString(),
-    recipient: message.recipient.toString(),
-    text: message.text,
-    file: message.file,
-    time: message.time,
-    createdAt: message.createdAt,
-    updatedAt: message.updatedAt,
-  }));
-
-  res.status(200).json(messages);
+  res.status(200).json(allMessages);
 });
 
 module.exports = { createMessage, uploadFile, getMessages, emitter };

@@ -31,7 +31,7 @@ const register = asyncHandler(async (req, res) => {
   // Server response
   if (createdUser) {
     const token = generateToken(createdUser._id, createdUser.username);
-    res.status(201).json({ id: createdUser._id, username, token });
+    res.status(201).json({ _id: createdUser._id, username, token });
   } else {
     res.status(500);
     throw new Error('Internal Server Error');
@@ -54,7 +54,7 @@ const login = asyncHandler(async (req, res) => {
   if (user && (await bycrypt.compare(password, user.password))) {
     const token = generateToken(user._id, user.username);
     res.status(200).json({
-      id: user.id,
+      _id: user.id,
       username,
       token,
     });
@@ -65,11 +65,11 @@ const login = asyncHandler(async (req, res) => {
 });
 
 // @desc get all registered users from DB
-// @route GET /api/users/
+// @route GET /api/users/contacts
 // @access Private
 const getUsers = asyncHandler(async (req, res) => {
   // Get the current user's ID from req.user.id
-  const currentUserId = req.user.id;
+  const currentUserId = req.user._id;
 
   // Query the database to find all users except the current user
   const users = await User.find(
@@ -77,53 +77,50 @@ const getUsers = asyncHandler(async (req, res) => {
     { _id: 1, username: 1 }
   );
 
-  // Map through the array and rename "_id" to "id" in each user object
-  const allUsers = users.map((user) => {
-    return {
-      id: user._id.toString(),
-      username: user.username,
-    };
-  });
-
-  res.status(200).json(allUsers);
-});
-
-// Regenerate new token
-const checkToken = asyncHandler(async (req, res) => {
-  const token =
-    req.headers.authorization && req.headers.authorization.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-password');
-
-    if (!user) {
-      return res
-        .status(401)
-        .json({ message: 'Not authorized, user not found' });
-    }
-
-    const newToken = generateToken(user._id, user.username);
-    res.status(200).json({ newToken });
-  } catch (err) {
-    res.status(401).json({ message: 'Token expired or invalid' });
-  }
+  res.status(200).json(users);
 });
 
 // Generate a jwt token
-function generateToken(id, username) {
-  return jwt.sign({ id, username }, process.env.JWT_SECRET, {
-    expiresIn: '30d',
-  });
+
+function generateToken(_id, username) {
+  try {
+    const payload = { _id, username };
+    const token = jwt.sign(payload, process.env.JWT_SECRET);
+    return token;
+  } catch (error) {
+    console.error('Error generating token:', error);
+    throw new Error('Token generation failed');
+  }
 }
 
 module.exports = {
   register,
   login,
   getUsers,
-  checkToken,
 };
+
+// Regenerate new token
+// const checkToken = asyncHandler(async (req, res) => {
+//   const token =
+//     req.headers.authorization && req.headers.authorization.split(' ')[1];
+
+//   if (!token) {
+//     return res.status(401).json({ message: 'Not authorized, no token' });
+//   }
+
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     const user = await User.findById(decoded.id).select('-password');
+
+//     if (!user) {
+//       return res
+//         .status(401)
+//         .json({ message: 'Not authorized, user not found' });
+//     }
+
+//     const newToken = generateToken(user._id, user.username);
+//     res.status(200).json({ newToken });
+//   } catch (err) {
+//     res.status(401).json({ message: 'Token expired or invalid' });
+//   }
+// });
