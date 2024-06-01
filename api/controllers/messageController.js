@@ -5,26 +5,28 @@ const EventEmitter = require('events');
 // Create an event emitter
 const emitter = new EventEmitter();
 
-// @desc Create message
-// @route POST /api/messages
-// @access Private
-const createMessage = asyncHandler(async (req, res) => {
-  if (!req.body.text) {
-    res.status(400);
-    throw new Error('Empty message');
+// @desc Create texts received by server
+const createText = async (messageData) => {
+  try {
+    if (!messageData) {
+      throw new Error('Empty message');
+    }
+
+    const { sender, recipient, time, messageRoom, text } = messageData;
+    // Create a new text
+    const newText = await Message.create({
+      sender,
+      recipient,
+      time,
+      messageRoom,
+      text,
+      file: null,
+    });
+    return newText;
+  } catch (error) {
+    throw error;
   }
-
-  // Create a new message
-  const newMessage = await Message.create({
-    sender: req.body.sender,
-    recipient: req.body.recipient,
-    text: req.body.text,
-    file: null,
-    time: req.body.time,
-  });
-
-  res.status(200).json(newMessage);
-});
+};
 
 // @desc Upload file
 // @route POST /api/messages/upload
@@ -71,4 +73,4 @@ const getMessages = asyncHandler(async (req, res) => {
   res.status(200).json(allMessages);
 });
 
-module.exports = { createMessage, uploadFile, getMessages, emitter };
+module.exports = { createText, uploadFile, getMessages, emitter };

@@ -10,9 +10,11 @@ const messageSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    text: String,
-    file: String,
-    time: Number,
+    time: { type: Number },
+    messageRoom: { type: String },
+    text: { type: String },
+    file: { type: String },
+    isRead: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

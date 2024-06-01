@@ -4,7 +4,7 @@ import axios from 'axios';
 
 function Message({ message, prevMsg, senderName }) {
   const { user } = useSelector((state) => state.auth);
-  const isMine = message.sender === user.id;
+  const isMine = message.sender === user._id;
   const { text, file } = message;
   const msgTime = extractTime(message.time);
   const currentDay = extractDate(message.time);
@@ -25,7 +25,7 @@ function Message({ message, prevMsg, senderName }) {
     <>
       <div className="day-separator">{daySeparator}</div>
       <div
-        key={message.id}
+        key={message._id}
         className={'message-container ' + (isMine ? 'text-right' : 'text-left')}
       >
         <div>

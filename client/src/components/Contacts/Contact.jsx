@@ -2,7 +2,7 @@ import { React, useContext, memo } from 'react';
 import Avatar from '../Avatar';
 import { ChatContext } from '../../context/ChatContext';
 import useFetchLatestMessage from '../../hooks/useFetchLatestMessage';
-import { getUnreadNotifications } from '../../utils/getUnreadNotiifications';
+import { getUnreadNotifications } from '../../utils/notificationServices';
 
 const Contact = ({ contact, joinRoom, selected, online }) => {
   const { notifications, setNotifications } = useContext(ChatContext);

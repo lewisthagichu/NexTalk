@@ -22,7 +22,7 @@ function Messages({ selectedUser }) {
         const prevMsg = index > 0 ? messages[index - 1] : null;
         return (
           <Message
-            key={message.id}
+            key={message._id}
             message={message}
             prevMsg={prevMsg}
             senderName={

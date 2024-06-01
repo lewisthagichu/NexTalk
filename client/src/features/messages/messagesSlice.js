@@ -34,7 +34,7 @@ export const uploadFile = createAsyncThunk(
   async (formData, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
-      return messagesService.uploadFile(formData, token);
+      return await messagesService.uploadFile(formData, token);
     } catch (error) {
       const message =
         (error.response &&
@@ -53,7 +53,7 @@ export const getMessages = createAsyncThunk(
   async (selectedUserId, thunkAPI) => {
     try {
       const token = thunkAPI.getState().auth.user.token;
-      return messagesService.getMessages(selectedUserId, token);
+      return await messagesService.getMessages(selectedUserId, token);
     } catch (error) {
       const message =
         (error.response &&

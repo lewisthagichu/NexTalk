@@ -4,14 +4,14 @@ const colors = require('colors');
 const cors = require('cors');
 const http = require('http');
 const socketio = require('socket.io');
+const Message = require('./models/messageModel');
+const User = require('./models/userModel');
+const { deleteAll } = require('./utils/clearDB');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const { socketMiddleware } = require('./middleware/socketMiddleware');
-const Message = require('./models/messageModel');
 const { userJoin, getUsers, userLeave } = require('./utils/connectedUsers');
-const { deleteAll } = require('./utils/clearDB');
 const connectDB = require('./config/db');
-const { emitter } = require('./controllers/messageController');
-const User = require('./models/userModel');
+const { emitter, createText } = require('./controllers/messageController');
 
 // Connect to the database
 connectDB();
@@ -69,26 +69,31 @@ io.on('connection', (socket) => {
   });
 
   // Receive new message from client
-  socket.on('newMessage', async ({ messageRoom, messageData }) => {
-    let fileData;
+  socket.on('newMessage', async ({ formData, textData, messageRoom }) => {
+    try {
+      let fileData;
 
-    if (messageData.text) {
-      socket.broadcast.to(messageRoom).emit('message', {
-        messageRoom,
-        messageData,
+      if (textData) {
+        const newText = await createText(textData);
+
+        socket.broadcast.to(messageRoom).emit('message', {
+          messageRoom,
+          newText,
+        });
+
+        console.log('message sent');
+      }
+
+      emitter.on('fileUploaded', (newFile) => {
+        socket.broadcast.to(messageRoom).emit('message', {
+          messageRoom,
+          newFile,
+        });
+        console.log('file sent');
       });
-
-      console.log('message sent');
+    } catch (error) {
+      console.log(error);
     }
-
-    emitter.on('fileUploaded', (newFile) => {
-      fileData = newFile;
-      socket.broadcast.to(messageRoom).emit('message', {
-        messageRoom,
-        fileData,
-      });
-      console.log('file sent');
-    });
   });
 
   // // Receive and transmit notifications
@@ -98,8 +103,8 @@ io.on('connection', (socket) => {
       .emit('notification', { messageRoom, data });
   });
 
-  // Send users to everyone connected
-  io.emit('activeUsers', { connectedUsers: getUsers() });
+  // Send online users to everyone connected
+  io.emit('onlineUsers', { connectedUsers: getUsers() });
 
   socket.on('disconnect', () => {
     const user = userLeave(socket.userId);

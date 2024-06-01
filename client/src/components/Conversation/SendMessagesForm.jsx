@@ -1,72 +1,72 @@
+import getSocket from '../../utils/socket';
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { IoAttachOutline, IoSendSharp } from 'react-icons/io5';
-import generateUniqueRoomName from '../../utils/generateUniqueRoomName';
-import {
-  createMessage,
-  uploadFile,
-} from '../../features/messages/messagesSlice';
+import { uploadFile } from '../../features/messages/messagesSlice';
+import { addMessage } from '../../features/messages/messagesSlice';
+import { generateUniqueRoomName } from '../../utils/usersServices';
 
-function SendMessagesForm({ socket, selectedUser }) {
-  const dispatch = useDispatch();
+const SendMessagesForm = ({ selectedUser }) => {
   const { user } = useSelector((state) => state.auth);
-  const [newMessage, setNewMessage] = useState('');
-  const isSubmitDisabled = !newMessage;
+  const [newText, setNewText] = useState('');
+  const socket = getSocket(user?.token);
+  const dispatch = useDispatch();
 
   // Handle message submit
-  function handleSubmit(e, formData = null) {
+  async function handleSubmit(e, file = null) {
     e?.preventDefault();
 
     // Data accompaning each text
     const messageRoom = generateUniqueRoomName(user._id, selectedUser._id);
+
     const data = {
-      time: Date.now(),
       sender: user._id,
       recipient: selectedUser._id,
-      isRead: false,
+      time: Date.now(),
+      messageRoom,
     };
-    const { time, sender, recipient } = data;
+    let messageData;
 
-    if (!formData) {
-      // Message data
-      const messageData = {
-        id: Date.now(),
-        time,
-        sender,
-        recipient,
-        text: newMessage,
-        file: null,
-      };
+    if (file) {
+      const formData = new FormData();
+      const { time, sender, recipient } = data;
 
-      // Send text to server
-      socket.emit('newMessage', { messageRoom, messageData });
-      dispatch(createMessage(messageData));
-
-      // Clear newMessage state
-      setNewMessage('');
-    } else {
-      formData.append('time', time);
       formData.append('sender', sender);
       formData.append('recipient', recipient);
+      formData.append('time', time);
+      formData.append('messageroom', messageRoom);
+      formData.append('file', file);
       formData.append('text', null);
-      formData.append('messagroom', messageRoom);
 
-      // Send file to server
-      const messageData = { text: null };
-      socket.emit('newMessage', { messageRoom, messageData });
+      messageData = { formData, messageRoom, textData: null };
+
       dispatch(uploadFile(formData));
+    } else {
+      const textData = {
+        ...data,
+        text: newText,
+        file: null,
+        _id: Date.now(),
+      };
+
+      messageData = { textData, messageRoom, formData: null };
+
+      dispatch(addMessage(textData));
+
+      setNewText('');
     }
+    // Send message to server
+    socket.emit('newMessage', messageData);
 
     // Send notification to server
     socket.emit('newNotification', { messageRoom, data });
   }
 
   // Send file
-  async function sendFile(e) {
+  function sendFile(e) {
     const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
-    handleSubmit(null, formData);
+
+    handleSubmit(null, file);
   }
 
   return (
@@ -83,15 +83,15 @@ function SendMessagesForm({ socket, selectedUser }) {
       />
       <input
         type="text"
-        value={newMessage}
-        onChange={(e) => setNewMessage(e.target.value)}
+        value={newText}
+        onChange={(e) => setNewText(e.target.value)}
         placeholder="Type your message here"
       />
-      <button disabled={isSubmitDisabled}>
+      <button disabled={!newText}>
         <IoSendSharp color="#4299e1" size={25} />
       </button>
     </form>
   );
-}
+};
 
 export default SendMessagesForm;

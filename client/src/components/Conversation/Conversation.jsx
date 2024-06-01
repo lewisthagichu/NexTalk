@@ -21,7 +21,7 @@ function Conversation({ isOnline }) {
         <div className="conversation-container">
           <UserHeader isOnline={isOnline} selectedUser={selectedUser} />
           <Messages selectedUser={selectedUser} />
-          {/* <SendMessagesForm selectedUser={selectedUser} /> */}
+          <SendMessagesForm selectedUser={selectedUser} />
         </div>
       )}
     </div>
