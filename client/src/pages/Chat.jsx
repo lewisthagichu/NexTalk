@@ -42,7 +42,9 @@ function Chat() {
 
     // Cleanup function
     return () => {
-      socket.disconnect();
+      if (socket) {
+        socket.disconnect();
+      }
     };
   }, [user, navigate, dispatch]);
 

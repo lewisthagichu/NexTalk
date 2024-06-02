@@ -2,12 +2,10 @@ import Contact from './Contact';
 import Footer from '../Footer';
 import SearchContactsForm from './SearchContactsForm';
 import getSocket from '../../utils/socket';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { ChatContext } from '../../context/ChatContext';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { updateOnlineUsers } from '../../utils/usersServices';
-import { addMessage } from '../../features/messages/messagesSlice';
-import { generateUniqueRoomName } from '../../utils/usersServices';
 
 function Contacts({ user }) {
   const { setOnlineUsers } = useContext(ChatContext);
@@ -15,27 +13,31 @@ function Contacts({ user }) {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const socket = getSocket(user.token);
-    setSocket(socket);
+    if (user) {
+      const socket = getSocket(user.token);
+      setSocket(socket);
 
-    // Receive online users
-    socket.on('onlineUsers', ({ connectedUsers }) => {
-      const onlineUsers = updateOnlineUsers(connectedUsers, user._id);
-      setOnlineUsers(onlineUsers);
-    });
+      // Receive online users
+      socket.on('onlineUsers', ({ connectedUsers }) => {
+        const onlineUsers = updateOnlineUsers(connectedUsers, user._id);
+        setOnlineUsers(onlineUsers);
+      });
+    }
 
     // Cleanup function
     return () => {
-      socket.disconnect();
+      if (socket) {
+        socket.disconnect();
+      }
     };
-  }, []);
+  }, [user]);
 
   return (
     <div className="contacts-container">
       <SearchContactsForm />
       <div className="contacts">
         {allUsers.map((user) => (
-          <Contact key={user._id} user={user} online={true} />
+          <Contact key={user._id} contact={user} online={true} />
         ))}
         {/* {offlineUsers.map((user) => (
           <Contact

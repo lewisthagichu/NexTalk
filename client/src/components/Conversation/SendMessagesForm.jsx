@@ -17,9 +17,11 @@ const SendMessagesForm = ({ selectedUser }) => {
 
     // Cleanup function
     return () => {
-      socket.disconnect();
+      if (socket) {
+        socket.disconnect();
+      }
     };
-  }, []);
+  }, [user]);
 
   // Handle message submit
   async function handleSubmit(e, file = null) {
