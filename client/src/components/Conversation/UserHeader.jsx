@@ -7,7 +7,7 @@ function UserHeader({ activeUsers, selectedUser }) {
   const [isOnline, setIsOnline] = useState(null);
 
   useEffect(() => {
-    if (selectedUser) {
+    if (selectedUser && activeUsers) {
       const isOnline = activeUsers.some(
         (item) =>
           item.id === selectedUser._id &&

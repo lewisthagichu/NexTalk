@@ -1,12 +1,20 @@
 import { useRef, useEffect } from 'react';
-import { uniqBy } from 'lodash';
+import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
+import { getMessages } from '../../features/messages/messagesSlice';
+import { uniqBy } from 'lodash';
 import Message from './Message';
 
 function Messages({ selectedUser }) {
   const { user } = useSelector((state) => state.auth);
   const { messages } = useSelector((state) => state.messages);
   const divRef = useRef();
+  const dispatch = useDispatch();
+
+  // Get all messages when a contact is clicked
+  useEffect(() => {
+    dispatch(getMessages(selectedUser._id));
+  }, [selectedUser, dispatch]);
 
   // Auto scroll conversation container
   useEffect(() => {

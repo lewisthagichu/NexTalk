@@ -57,36 +57,19 @@ function Chat() {
     }
   }, [activeUsers, dispatch]);
 
-  // Get all messages when a contact is clicked
-  useEffect(() => {
-    if (selectedUser) {
-      const isOnline = activeUsers.some(
-        (item) =>
-          item.id === selectedUser._id &&
-          item.username === selectedUser.username
-      );
-
-      setIsOnline(isOnline);
-
-      dispatch(getMessages(selectedUser._id));
-    }
-  }, [selectedUser, activeUsers, dispatch]);
-
   if (!user) return null;
 
   return (
-    user && (
-      <div className="flex h-screen">
-        <section className="bg-white w-1/3 flex left">
-          <Sidebar />
-          <Contacts allUsers={allUsers} offlineUsers={offlineUsers} />
-        </section>
+    <div className="flex h-screen">
+      <section className="bg-white w-1/3 flex left">
+        <Sidebar />
+        <Contacts allUsers={allUsers} offlineUsers={offlineUsers} />
+      </section>
 
-        <section className="bg-blue-100 w-2/3 flex flex-col right">
-          <Conversation />
-        </section>
-      </div>
-    )
+      <section className="bg-blue-100 w-2/3 flex flex-col right">
+        <Conversation />
+      </section>
+    </div>
   );
 }
 
