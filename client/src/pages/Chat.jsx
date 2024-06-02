@@ -21,8 +21,6 @@ function Chat() {
   const [activeUsers, setActiveUsers] = useState([]);
   const [offlineUsers, setOfflineUsers] = useState([]);
 
-  const [isOnline, setIsOnline] = useState(null);
-
   // Proceed with the rest of the component logic only if the user is authenticated
   useEffect(() => {
     if (!user) {
@@ -85,7 +83,7 @@ function Chat() {
         </section>
 
         <section className="bg-blue-100 w-2/3 flex flex-col right">
-          <Conversation isOnline={isOnline ? 'Online' : 'Offline'} />
+          <Conversation />
         </section>
       </div>
     )
