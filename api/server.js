@@ -111,7 +111,7 @@ io.on('connection', (socket) => {
 
     if (user) {
       // Send users to everyone connected
-      io.emit('activeUsers', { connectedUsers: getUsers() });
+      io.emit('onlineUsers', { connectedUsers: getUsers() });
     }
   });
 });

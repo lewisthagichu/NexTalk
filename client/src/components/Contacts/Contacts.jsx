@@ -28,8 +28,8 @@ function Contacts({ offlineUsers }) {
     const socket = getSocket(user.token);
     setSocket(socket);
 
-    // Receive onlineusers
-    socket.on('activeUsers', ({ connectedUsers }) => {
+    // Receive online users
+    socket.on('onlineUsers', ({ connectedUsers }) => {
       const onlineUsers = updateOnlineUsers(connectedUsers, user._id);
       setOnlineUsers(onlineUsers);
     });

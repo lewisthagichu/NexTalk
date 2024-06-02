@@ -6,7 +6,7 @@ import Messages from './Messages';
 import SendMessagesForm from './SendMessagesForm';
 
 function Conversation() {
-  const { selectedUser, activeUsers } = useContext(ChatContext);
+  const { selectedUser, onlineUsers } = useContext(ChatContext);
   return (
     <div className="flex flex-col flex-grow">
       {!selectedUser && (
@@ -19,7 +19,7 @@ function Conversation() {
 
       {selectedUser && (
         <div className="conversation-container">
-          <UserHeader activeUsers={activeUsers} selectedUser={selectedUser} />
+          <UserHeader onlineUsers={onlineUsers} selectedUser={selectedUser} />
           <Messages selectedUser={selectedUser} />
           <SendMessagesForm selectedUser={selectedUser} />
         </div>

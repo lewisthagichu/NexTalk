@@ -3,12 +3,12 @@ import { useDispatch } from 'react-redux';
 import { IoSearch, IoCall } from 'react-icons/io5';
 import Avatar from '../Avatar';
 
-function UserHeader({ activeUsers, selectedUser }) {
+function UserHeader({ onlineUsers, selectedUser }) {
   const [isOnline, setIsOnline] = useState(null);
 
   useEffect(() => {
-    if (selectedUser && activeUsers) {
-      const isOnline = activeUsers.some(
+    if (selectedUser && onlineUsers) {
+      const isOnline = onlineUsers.some(
         (item) =>
           item.id === selectedUser._id &&
           item.username === selectedUser.username
@@ -16,7 +16,7 @@ function UserHeader({ activeUsers, selectedUser }) {
 
       setIsOnline(isOnline);
     }
-  }, [selectedUser, activeUsers]);
+  }, [selectedUser, onlineUsers]);
   const handleSubmit = (event) => {};
   return (
     <div className="user-details">
