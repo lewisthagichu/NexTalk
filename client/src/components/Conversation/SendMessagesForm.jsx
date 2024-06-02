@@ -1,5 +1,5 @@
 import getSocket from '../../utils/socket';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { IoAttachOutline, IoSendSharp } from 'react-icons/io5';
 import { uploadFile } from '../../features/messages/messagesSlice';
@@ -8,9 +8,18 @@ import { generateUniqueRoomName } from '../../utils/usersServices';
 
 const SendMessagesForm = ({ selectedUser }) => {
   const { user } = useSelector((state) => state.auth);
+  const [socket, setSocket] = useState(null);
   const [newText, setNewText] = useState('');
-  const socket = getSocket(user?.token);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const socket = getSocket(user.token);
+
+    // Cleanup function
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   // Handle message submit
   async function handleSubmit(e, file = null) {

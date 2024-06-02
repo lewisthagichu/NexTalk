@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unknown-property */
 import { useDispatch, useSelector } from 'react-redux';
-import { useState, useEffect, useContext } from 'react';
+import { useEffect, useContext } from 'react';
 import { ChatContext } from '../context/ChatContext';
 import { useNavigate } from 'react-router-dom';
 import { getUsers } from '../features/auth/authSlice';
@@ -13,7 +13,9 @@ function Chat() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { user, allUsers } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
+
+  const { onlineUsers, setOnlineUsers } = useContext(ChatContext);
 
   // const [activeUsers, setActiveUsers] = useState([]);
   // const [offlineUsers, setOfflineUsers] = useState([]);
@@ -22,20 +24,27 @@ function Chat() {
   useEffect(() => {
     if (!user) {
       navigate('/register');
-    } else {
-      const { token } = user;
-
-      // Connect socket with authentication token
-      const socket = getSocket(token);
-
-      // Try reconnecting incase of a disconnect
-      socket.on('disconnect', () => {
-        setTimeout(() => {
-          getSocket(token);
-        }, 1000);
-      });
+      return;
     }
-  }, [user, navigate]);
+    // Get all users from database
+    dispatch(getUsers());
+
+    // Connect socket with authentication token
+    const { token } = user;
+    const socket = getSocket(token);
+
+    // Try reconnecting incase of a disconnect
+    socket.on('disconnect', () => {
+      setTimeout(() => {
+        getSocket(token);
+      }, 1000);
+    });
+
+    // Cleanup function
+    return () => {
+      socket.disconnect();
+    };
+  }, [user, navigate, dispatch]);
 
   // Get offline users and check if they are online
   // useEffect(() => {
@@ -56,7 +65,7 @@ function Chat() {
     <div className="flex h-screen">
       <section className="bg-white w-1/3 flex left">
         <Sidebar />
-        <Contacts allUsers={allUsers} />
+        <Contacts user={user} />
       </section>
 
       <section className="bg-blue-100 w-2/3 flex flex-col right">
