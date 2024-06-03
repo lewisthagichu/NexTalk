@@ -8,7 +8,7 @@ import { getUnreadNotifications } from '../../utils/notificationServices';
 import getSocket from '../../utils/socket';
 import Avatar from '../Avatar';
 
-const Contact = ({ contact, online }) => {
+function Contact({ contact }) {
   const { notifications, setNotifications, selectedUser, setSelectedUser } =
     useContext(ChatContext);
   const { user } = useSelector((state) => state.auth);
@@ -34,6 +34,8 @@ const Contact = ({ contact, online }) => {
       // Recipient gets message from socketIO server
       socket.on('message', ({ messageRoom, newText, newFile }) => {
         let currentRoom = currentRoomRef.current;
+        console.log(`The room the message was received is: ${currentRoom}`);
+        console.log(`The messageroom received is ${messageRoom}`);
         if (currentRoom === messageRoom) {
           const message = newFile ? newFile : newText;
           dispatch(addMessage(message));
@@ -61,20 +63,22 @@ const Contact = ({ contact, online }) => {
   }, [user, dispatch]);
 
   // Joint room with selected user/contact
-  function joinRoom() {
-    const roomName = generateUniqueRoomName(user._id, contact._id);
+  function joinRoom(selectedContact) {
+    const roomName = generateUniqueRoomName(user._id, selectedContact._id);
     setCurrentRoom(roomName);
     currentRoomRef.current = roomName;
+    console.log(`The selected room is: ${roomName}`);
 
     // Set selected user state
-    setSelectedUser(contact);
+    setSelectedUser(selectedContact);
 
     // Send joinRoom event to socketIO server
     socket.emit('joinRoom', roomName);
   }
+
   return (
     <div
-      onClick={joinRoom}
+      onClick={() => joinRoom(contact)}
       className={`contact ${
         contact._id === selectedUser?._id ? 'selected' : ''
       }`}
@@ -88,7 +92,7 @@ const Contact = ({ contact, online }) => {
         </div>
       </div>
       <div className="contact-right">
-        <p className="text-time">30/5/2024</p>
+        <p className="text-time">3/6/2024</p>
         <div
         // className={contactNotifications?.length > 0 ? 'notification' : 'hide'}
         >
@@ -99,6 +103,6 @@ const Contact = ({ contact, online }) => {
       </div>
     </div>
   );
-};
+}
 
 export default Contact;

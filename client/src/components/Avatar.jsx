@@ -3,7 +3,7 @@ import { ChatContext } from '../context/ChatContext';
 import ProfileModal from './modals/ProfileModal';
 import defaultPhoto from '../assets/profile.png';
 
-function Avatar({ contact, userId, username, profileExists }) {
+function Avatar({ contact, profileExists }) {
   const [modal, setModal] = useState(false);
   const [isOnline, setIsOnline] = useState(null);
   const { onlineUsers } = useContext(ChatContext);
@@ -69,7 +69,7 @@ function Avatar({ contact, userId, username, profileExists }) {
           onClick={toggleModal}
         >
           <div className="text-center w-full opacity-70">
-            {contact?.username[0]}
+            {contact?.username[0].toUpperCase()}
           </div>
           {/* <div
             className={`absolute w-3 h-3 ${

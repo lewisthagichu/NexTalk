@@ -1,9 +1,10 @@
 /* eslint-disable react/no-unknown-property */
-import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useContext } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { ChatContext } from '../context/ChatContext';
 import { useNavigate } from 'react-router-dom';
 import { getUsers } from '../features/auth/authSlice';
+import { updateOnlineUsers } from '../utils/usersServices';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Contacts from '../components/Contacts/Contacts';
 import Conversation from '../components/Conversation/Conversation';
@@ -15,7 +16,7 @@ function Chat() {
 
   const { user } = useSelector((state) => state.auth);
 
-  const { onlineUsers, setOnlineUsers } = useContext(ChatContext);
+  const { setOnlineUsers } = useContext(ChatContext);
 
   // const [activeUsers, setActiveUsers] = useState([]);
   // const [offlineUsers, setOfflineUsers] = useState([]);
@@ -33,6 +34,12 @@ function Chat() {
     const { token } = user;
     const socket = getSocket(token);
 
+    // Receive online users
+    socket.on('onlineUsers', ({ connectedUsers }) => {
+      const onlineUsers = updateOnlineUsers(connectedUsers, user._id);
+      setOnlineUsers(onlineUsers);
+    });
+
     // Try reconnecting incase of a disconnect
     socket.on('disconnect', () => {
       setTimeout(() => {
@@ -46,7 +53,7 @@ function Chat() {
     //     socket.disconnect();
     //   }
     // };
-  }, [user, navigate, dispatch]);
+  }, [user, navigate, dispatch, setOnlineUsers]);
 
   // Get offline users and check if they are online
   // useEffect(() => {
@@ -67,7 +74,7 @@ function Chat() {
     <div className="flex h-screen">
       <section className="bg-white w-1/3 flex left">
         <Sidebar />
-        <Contacts user={user} />
+        <Contacts />
       </section>
 
       <section className="bg-blue-100 w-2/3 flex flex-col right">

@@ -1,5 +1,5 @@
 import Avatar from '../Avatar';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { MdGroupAdd } from 'react-icons/md';
 import { BiLogOut } from 'react-icons/bi';
@@ -9,6 +9,8 @@ import { reset, logout } from '../../features/auth/authSlice';
 function Sidebar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const { user } = useSelector((state) => state.auth);
 
   const handleLogout = () => {
     dispatch(logout());

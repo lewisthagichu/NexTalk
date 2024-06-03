@@ -1,12 +1,14 @@
 import getSocket from '../../utils/socket';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { ChatContext } from '../../context/ChatContext';
 import { IoAttachOutline, IoSendSharp } from 'react-icons/io5';
 import { uploadFile } from '../../features/messages/messagesSlice';
 import { addMessage } from '../../features/messages/messagesSlice';
 import { generateUniqueRoomName } from '../../utils/usersServices';
 
-const SendMessagesForm = ({ selectedUser }) => {
+const SendMessagesForm = () => {
+  const { selectedUser } = useContext(ChatContext);
   const { user } = useSelector((state) => state.auth);
   const [socket, setSocket] = useState(null);
   const [newText, setNewText] = useState('');
@@ -30,6 +32,7 @@ const SendMessagesForm = ({ selectedUser }) => {
 
     // Data accompaning each text
     const messageRoom = generateUniqueRoomName(user._id, selectedUser._id);
+    console.log(`The room the message was sent is: ${messageRoom}`);
 
     const data = {
       sender: user._id,
@@ -70,7 +73,6 @@ const SendMessagesForm = ({ selectedUser }) => {
 
     // Send message to server
     socket.emit('newMessage', messageData);
-    console.log(messageData);
 
     // Send notification to server
     socket.emit('newNotification', { messageRoom, data });
