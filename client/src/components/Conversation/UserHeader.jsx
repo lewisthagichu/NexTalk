@@ -4,6 +4,7 @@ import Avatar from '../Avatar';
 
 function UserHeader({ onlineUsers, selectedUser }) {
   const [isOnline, setIsOnline] = useState(null);
+  console.log(selectedUser);
 
   useEffect(() => {
     if (selectedUser && onlineUsers) {

@@ -24,7 +24,7 @@ const Contact = ({ contact, online }) => {
 
   const currentRoomRef = useRef(currentRoom);
   const dispatch = useDispatch();
-  console.log(contact);
+  // console.log(contact);
 
   useEffect(() => {
     if (user) {
@@ -67,7 +67,7 @@ const Contact = ({ contact, online }) => {
     currentRoomRef.current = roomName;
 
     // Set selected user state
-    setSelectedUser(contact._id);
+    setSelectedUser(contact);
 
     // Send joinRoom event to socketIO server
     socket.emit('joinRoom', roomName);
