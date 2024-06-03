@@ -21,7 +21,7 @@ function Sidebar() {
     <aside>
       <div className="container">
         <div className="profile">
-          <Avatar profileExists={true} />
+          <Avatar contact={user} profileExists={false} />
         </div>
         <nav>
           <div className="icons selected">
