@@ -4,7 +4,6 @@ import { io } from 'socket.io-client';
 let socket;
 
 const getSocket = (token) => {
-  if (!token) return;
   if (!socket) {
     socket = io('http://localhost:5000', {
       auth: {

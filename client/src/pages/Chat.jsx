@@ -41,11 +41,11 @@ function Chat() {
     });
 
     // Cleanup function
-    return () => {
-      if (socket) {
-        socket.disconnect();
-      }
-    };
+    // return () => {
+    //   if (socket) {
+    //     socket.disconnect();
+    //   }
+    // };
   }, [user, navigate, dispatch]);
 
   // Get offline users and check if they are online

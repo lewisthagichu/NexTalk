@@ -53,11 +53,11 @@ const Contact = ({ contact, online }) => {
       });
     }
     // Cleanup function
-    return () => {
-      if (socket) {
-        socket.disconnect();
-      }
-    };
+    // return () => {
+    //   if (socket) {
+    //     socket.disconnect();
+    //   }
+    // };
   }, [user, dispatch]);
 
   // Joint room with selected user/contact

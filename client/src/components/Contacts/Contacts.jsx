@@ -25,11 +25,11 @@ function Contacts({ user }) {
     }
 
     // Cleanup function
-    return () => {
-      if (socket) {
-        socket.disconnect();
-      }
-    };
+    // return () => {
+    //   if (socket) {
+    //     socket.disconnect();
+    //   }
+    // };
   }, [user]);
 
   return (

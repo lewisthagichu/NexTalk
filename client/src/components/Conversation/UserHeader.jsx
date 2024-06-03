@@ -4,18 +4,15 @@ import Avatar from '../Avatar';
 
 function UserHeader({ onlineUsers, selectedUser }) {
   const [isOnline, setIsOnline] = useState(null);
-  console.log(selectedUser);
+  console.log(onlineUsers);
 
   useEffect(() => {
-    if (selectedUser && onlineUsers) {
-      const isOnline = onlineUsers.some(
-        (item) =>
-          item.id === selectedUser._id &&
-          item.username === selectedUser.username
-      );
+    const isOnline = onlineUsers.some(
+      (item) =>
+        item._id === selectedUser._id && item.username === selectedUser.username
+    );
 
-      setIsOnline(isOnline);
-    }
+    setIsOnline(isOnline);
   }, [selectedUser, onlineUsers]);
   const handleSubmit = (event) => {};
   return (

@@ -14,17 +14,18 @@ const SendMessagesForm = ({ selectedUser }) => {
 
   useEffect(() => {
     const socket = getSocket(user.token);
+    setSocket(socket);
 
     // Cleanup function
-    return () => {
-      if (socket) {
-        socket.disconnect();
-      }
-    };
+    // return () => {
+    //   if (socket) {
+    //     socket.disconnect();
+    //   }
+    // };
   }, [user]);
 
   // Handle message submit
-  async function handleSubmit(e, file = null) {
+  function handleSubmit(e, file = null) {
     e?.preventDefault();
 
     // Data accompaning each text
@@ -66,8 +67,10 @@ const SendMessagesForm = ({ selectedUser }) => {
 
       setNewText('');
     }
+
     // Send message to server
     socket.emit('newMessage', messageData);
+    console.log(messageData);
 
     // Send notification to server
     socket.emit('newNotification', { messageRoom, data });
