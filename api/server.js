@@ -61,9 +61,12 @@ io.use((socket, next) => {
 
 //  Set up a connection event for SocketIO
 io.on('connection', (socket) => {
-  const user = userJoin(socket.userId, socket.username);
+  userJoin(socket.userId, socket.username);
   console.log('Connected to socker.io server');
   // deleteAll(Message);
+
+  // Send online users to everyone connected
+  io.emit('onlineUsers', { connectedUsers: getUsers() });
 
   socket.on('joinRoom', (roomName) => {
     socket.join(roomName);
@@ -103,9 +106,6 @@ io.on('connection', (socket) => {
       .to(messageRoom)
       .emit('notification', { messageRoom, data });
   });
-
-  // Send online users to everyone connected
-  io.emit('onlineUsers', { connectedUsers: getUsers() });
 
   socket.on('disconnect', () => {
     const user = userLeave(socket.userId);
