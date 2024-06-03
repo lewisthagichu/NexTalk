@@ -80,12 +80,7 @@ const Contact = ({ contact, online }) => {
       }`}
     >
       <div className="contact-left">
-        <Avatar
-          userId={contact._id}
-          username={contact.username}
-          online={online}
-          profileExists={false}
-        />
+        <Avatar contact={contact} profileExists={false} />
 
         <div className="contact-context">
           <p className="text-gray font-semibold text-lg">{contact.username}</p>
