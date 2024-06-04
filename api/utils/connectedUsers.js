@@ -19,8 +19,8 @@ const getUsers = () => {
 };
 
 // Remove a disconnected user from the list
-function userLeave(_id) {
-  const index = users.findIndex((user) => user._id === _id);
+function userLeave(id) {
+  const index = users.findIndex((user) => user._id === id);
   if (index !== -1) {
     return users.splice(index, 1)[0];
   }

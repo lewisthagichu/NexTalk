@@ -7,7 +7,7 @@ import Message from './Message';
 
 function Messages({ selectedUser }) {
   const { user } = useSelector((state) => state.auth);
-  const { messages } = useSelector((state) => state.messages);
+  const { messages, isLoading } = useSelector((state) => state.messages);
   const divRef = useRef();
   const dispatch = useDispatch();
 
@@ -26,21 +26,22 @@ function Messages({ selectedUser }) {
   const uniqueMessages = uniqBy(messages, 'time');
   return (
     <div ref={divRef} className="flex-grow overflow-y-scroll relative">
-      {uniqueMessages.map((message, index) => {
-        const prevMsg = index > 0 ? messages[index - 1] : null;
-        return (
-          <Message
-            key={message._id}
-            message={message}
-            prevMsg={prevMsg}
-            senderName={
-              message.sender === user._id
-                ? user.username
-                : selectedUser.username
-            }
-          />
-        );
-      })}
+      {!isLoading &&
+        uniqueMessages.map((message, index) => {
+          const prevMsg = index > 0 ? messages[index - 1] : null;
+          return (
+            <Message
+              key={message._id}
+              message={message}
+              prevMsg={prevMsg}
+              senderName={
+                message.sender === user._id
+                  ? user.username
+                  : selectedUser.username
+              }
+            />
+          );
+        })}
     </div>
   );
 }

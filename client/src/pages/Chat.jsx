@@ -37,11 +37,11 @@ function Chat() {
     });
 
     // Try reconnecting incase of a disconnect
-    socket.on('disconnect', () => {
-      setTimeout(() => {
-        getSocket(token);
-      }, 1000);
-    });
+    // socket.on('disconnect', () => {
+    //   setTimeout(() => {
+    //     getSocket(token);
+    //   }, 1000);
+    // });
 
     // Cleanup function
     // return () => {

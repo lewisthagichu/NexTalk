@@ -111,6 +111,7 @@ io.on('connection', (socket) => {
     const user = userLeave(socket.userId);
 
     if (user) {
+      console.log('first');
       // Send users to everyone connected
       io.emit('onlineUsers', { connectedUsers: getUsers() });
     }
