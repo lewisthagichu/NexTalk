@@ -1,5 +1,7 @@
 import Avatar from '../Avatar';
+import { useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { ChatContext } from '../../context/ChatContext';
 import { useNavigate } from 'react-router-dom';
 import { MdGroupAdd } from 'react-icons/md';
 import { BiLogOut } from 'react-icons/bi';
@@ -11,8 +13,14 @@ function Sidebar() {
   const navigate = useNavigate();
 
   const { user } = useSelector((state) => state.auth);
+  const { setNotifications, setSelectedUser, setOnlineUsers } =
+    useContext(ChatContext);
 
   const handleLogout = () => {
+    setNotifications([]);
+    setSelectedUser(null);
+    setOnlineUsers([]);
+
     dispatch(logout());
     dispatch(reset());
     navigate('/');
