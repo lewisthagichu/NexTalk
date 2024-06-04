@@ -46,7 +46,7 @@ A real-time chat application built with React, Redux, Node.js, Express, and Sock
 
 ### Environment Variables
 
-Create a `.env` file in the `server` directory and add the following:
+Create a `.env` file in the `api` directory and add the following:
 
 ```env
 PORT=***
@@ -73,7 +73,7 @@ CLIENT_URL=http://localhost:3000
 
 ## Project Structure
 
-### Server
+### Api
 
 - `server.js`: Entry point for the backend server.
 - `config/connectDB.js`: MongoDB connection configuration.
