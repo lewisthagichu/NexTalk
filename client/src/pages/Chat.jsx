@@ -15,11 +15,7 @@ function Chat() {
   const navigate = useNavigate();
 
   const { user } = useSelector((state) => state.auth);
-
   const { setOnlineUsers } = useContext(ChatContext);
-
-  // const [activeUsers, setActiveUsers] = useState([]);
-  // const [offlineUsers, setOfflineUsers] = useState([]);
 
   // Proceed with the rest of the component logic only if the user is authenticated
   useEffect(() => {
@@ -54,19 +50,6 @@ function Chat() {
     //   }
     // };
   }, [user, navigate, dispatch, setOnlineUsers]);
-
-  // Get offline users and check if they are online
-  // useEffect(() => {
-  //   if (activeUsers) {
-  //     dispatch(getUsers());
-
-  //     // const inactiveUsers = allUsers.filter(contact => {
-  //     //   return !activeUsers.some(activeUser => activeUser._id === contact.id);
-  //     // });
-
-  //     // setOfflineUsers(inactiveUsers);
-  //   }
-  // }, [activeUsers, dispatch]);
 
   if (!user) return null;
 

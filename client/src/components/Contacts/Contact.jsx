@@ -1,17 +1,14 @@
-import { useContext, useState, useEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { generateUniqueRoomName } from '../../utils/usersServices';
-import { addMessage } from '../../features/messages/messagesSlice';
+import { useContext } from 'react';
+import { useSelector } from 'react-redux';
 import { ChatContext } from '../../context/ChatContext';
 import useFetchLatestMessage from '../../hooks/useFetchLatestMessage';
 import { getUnreadNotifications } from '../../utils/notificationServices';
-import getSocket from '../../utils/socket';
 import Avatar from '../Avatar';
 
-function Contact({ contact }) {
-  const { notifications, setNotifications, selectedUser, setSelectedUser } =
-    useContext(ChatContext);
+function Contact({ contact, joinRoom }) {
+  const { notifications, selectedUser } = useContext(ChatContext);
   const { user } = useSelector((state) => state.auth);
+
   // const unreadNotifications = getUnreadNotifications(notifications);
   // const contactNotifications = unreadNotifications?.filter(
   //   (n) => n.sender === contact._id
@@ -19,66 +16,13 @@ function Contact({ contact }) {
   // const {latestMessage} = useFetchLatestMessage(contact.id)
   // console.log(`Nots: ${JSON.stringify(contactNotifications)}`);
 
-  const [socket, setSocket] = useState();
-  const [currentRoom, setCurrentRoom] = useState(null);
-
-  const currentRoomRef = useRef(currentRoom);
-  const dispatch = useDispatch();
-  // console.log(contact);
-
-  useEffect(() => {
-    if (user) {
-      const socket = getSocket(user.token);
-      setSocket(socket);
-
-      // Recipient gets message from socketIO server
-      socket.on('message', ({ messageRoom, newText, newFile }) => {
-        let currentRoom = currentRoomRef.current;
-        console.log(`The room the message was received is: ${currentRoom}`);
-        console.log(`The messageroom received is ${messageRoom}`);
-        if (currentRoom === messageRoom) {
-          const message = newFile ? newFile : newText;
-          dispatch(addMessage(message));
-          console.log('first');
-        }
-      });
-
-      // Recipient gets message from socketIO server
-      socket.on('notification', ({ messageRoom, data }) => {
-        let currentRoom = currentRoomRef.current;
-        if (currentRoom === messageRoom) {
-          const newData = { ...data, isRead: true };
-          setNotifications((prev) => [newData, ...prev]);
-        } else {
-          setNotifications((prev) => [data, ...prev]);
-        }
-      });
-    }
-    // Cleanup function
-    // return () => {
-    //   if (socket) {
-    //     socket.disconnect();
-    //   }
-    // };
-  }, [user, dispatch]);
-
-  // Joint room with selected user/contact
-  function joinRoom(selectedContact) {
-    const roomName = generateUniqueRoomName(user._id, selectedContact._id);
-    setCurrentRoom(roomName);
-    currentRoomRef.current = roomName;
-    console.log(`The selected room is: ${roomName}`);
-
-    // Set selected user state
-    setSelectedUser(selectedContact);
-
-    // Send joinRoom event to socketIO server
-    socket.emit('joinRoom', roomName);
-  }
+  const handleJoinRoom = (selectedContact) => {
+    joinRoom(selectedContact);
+  };
 
   return (
     <div
-      onClick={() => joinRoom(contact)}
+      onClick={() => handleJoinRoom(contact)}
       className={`contact ${
         contact._id === selectedUser?._id ? 'selected' : ''
       }`}
