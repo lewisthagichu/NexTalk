@@ -29,12 +29,12 @@ A real-time chat application built with React, Redux, Node.js, Express, and Sock
 1. Clone the repository:
     ```sh
     git clone https://github.com/your-username/NexTalk.git
-    cd chat-app
+    cd NexTalk
     ```
 
 2. Install dependencies for the server:
     ```sh
-    cd server
+    cd api
     npm install
     ```
 
