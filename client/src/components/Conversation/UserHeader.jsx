@@ -20,7 +20,7 @@ function UserHeader({ onlineUsers, selectedUser }) {
         <Avatar profileExists={true} />
         <div className="name">
           <small className="username">{selectedUser.username}</small>
-          <small>{isOnline ? 'Online' : 'Offline'}</small>
+          <small>{isOnline ? 'Online' : 'Online'}</small>
         </div>
       </div>
 

@@ -1,10 +1,20 @@
-import { useSelector } from 'react-redux';
+import { useEffect, useContext } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { ChatContext } from '../../context/ChatContext';
 import Contact from './Contact';
 import Footer from '../Footer';
 import SearchContactsForm from './SearchContactsForm';
+import { getUsers } from '../../features/auth/authSlice';
 
 function Contacts() {
   const { allUsers } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  const { onlineUsers } = useContext(ChatContext);
+
+  useEffect(() => {
+    dispatch(getUsers());
+  }, [onlineUsers, allUsers, dispatch]);
 
   return (
     <div className="contacts-container">
