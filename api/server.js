@@ -37,6 +37,7 @@ app.use(express.urlencoded({ limit: '15mb', extended: true }));
 // Routes
 app.use('/api/users', require('./routes/userRoute'));
 app.use('/api/messages', require('./routes/messageRoute'));
+app.use('/api/notifications', require('./routes/notificationRoute'));
 
 // Error handler middleware
 app.use(errorHandler);
@@ -76,8 +77,6 @@ io.on('connection', (socket) => {
   // Receive new message from client
   socket.on('newMessage', async ({ formData, textData, messageRoom }) => {
     try {
-      let fileData;
-
       if (textData) {
         const newText = await createText(textData);
 

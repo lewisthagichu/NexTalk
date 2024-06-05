@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 
 const notificationSchema = mongoose.Schema(
   {
-    senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    recipientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     message: String,
     isRead: { type: Boolean, default: false },
   },

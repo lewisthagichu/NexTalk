@@ -50,7 +50,7 @@ function Chat() {
       }
     };
 
-    fetchNotifications();
+    // fetchNotifications();
   }, [user, dispatch]);
 
   if (!user) return null;
