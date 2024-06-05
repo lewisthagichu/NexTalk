@@ -14,7 +14,6 @@ const messageSchema = mongoose.Schema(
     messageRoom: { type: String },
     text: { type: String },
     file: { type: String },
-    isRead: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
