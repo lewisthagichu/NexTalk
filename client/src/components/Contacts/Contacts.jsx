@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ChatContext } from '../../context/ChatContext';
 import { addMessage } from '../../features/messages/messagesSlice';
 import { generateUniqueRoomName } from '../../utils/usersServices';
-import { getUsers } from '../../features/auth/authSlice';
+import { updateOnlineUsers } from '../../utils/usersServices';
 import Contact from './Contact';
 import Footer from '../Footer';
 import SearchContactsForm from './SearchContactsForm';
@@ -14,7 +14,7 @@ function Contacts() {
   const [currentRoom, setCurrentRoom] = useState(null);
 
   const currentRoomRef = useRef(currentRoom);
-  const { onlineUsers, setNotifications, setSelectedUser } =
+  const { onlineUsers, setOnlineUsers, setNotifications, setSelectedUser } =
     useContext(ChatContext);
 
   const { allUsers, user } = useSelector((state) => state.auth);
@@ -38,7 +38,6 @@ function Contacts() {
         if (currentRoom === messageRoom) {
           const message = newFile ? newFile : newText;
           dispatch(addMessage(message));
-          console.log('first');
         }
       });
 
@@ -53,26 +52,21 @@ function Contacts() {
         }
       });
     }
-    // Cleanup function
-    // return () => {
-    //   if (socket) {
-    //     socket.disconnect();
-    //   }
-    // };
-  }, [user, setNotifications, dispatch]);
+  }, [user, setNotifications, setOnlineUsers, dispatch]);
+
+  console.log(onlineUsers);
 
   // Joint room with selected user/contact
   function joinRoom(selectedContact) {
     const roomName = generateUniqueRoomName(user._id, selectedContact._id);
+
     setCurrentRoom(roomName);
     currentRoomRef.current = roomName;
 
     // console.log(`The selected room is: ${roomName}`);
 
-    // Set selected user state
     setSelectedUser(selectedContact);
 
-    // Send joinRoom event to socketIO server
     socket.emit('joinRoom', roomName);
   }
 
@@ -83,15 +77,6 @@ function Contacts() {
         {allUsers.map((user) => (
           <Contact key={user._id} contact={user} joinRoom={joinRoom} />
         ))}
-        {/* {offlineUsers.map((user) => (
-          <Contact
-            key={user._id}
-            contact={user}
-            joinRoom={joinRoom}
-            selected={user._id === selectedUser?._id}
-            online={false}
-          />
-        ))} */}
       </div>
       <Footer />
     </div>

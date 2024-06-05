@@ -7,6 +7,7 @@ import { MdGroupAdd } from 'react-icons/md';
 import { BiLogOut } from 'react-icons/bi';
 import { IoChatboxEllipses } from 'react-icons/io5';
 import { reset, logout } from '../../features/auth/authSlice';
+import getSocket from '../../utils/socket';
 
 function Sidebar() {
   const dispatch = useDispatch();
@@ -17,6 +18,9 @@ function Sidebar() {
     useContext(ChatContext);
 
   const handleLogout = () => {
+    const socket = getSocket(user.token);
+    socket.disconnect();
+
     setNotifications([]);
     setSelectedUser(null);
     setOnlineUsers([]);
