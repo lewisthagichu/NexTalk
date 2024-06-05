@@ -12,17 +12,13 @@ import getSocket from '../../utils/socket';
 function Contacts() {
   const [socket, setSocket] = useState();
   const [currentRoom, setCurrentRoom] = useState(null);
-
   const currentRoomRef = useRef(currentRoom);
-  const { onlineUsers, setOnlineUsers, setNotifications, setSelectedUser } =
-    useContext(ChatContext);
 
   const { allUsers, user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   dispatch(getUsers());
-  // }, [onlineUsers, dispatch]);
+  const { onlineUsers, setOnlineUsers, setNotifications, setSelectedUser } =
+    useContext(ChatContext);
 
   useEffect(() => {
     if (user) {

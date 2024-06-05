@@ -17,13 +17,6 @@ const SendMessagesForm = () => {
   useEffect(() => {
     const socket = getSocket(user.token);
     setSocket(socket);
-
-    // Cleanup function
-    // return () => {
-    //   if (socket) {
-    //     socket.disconnect();
-    //   }
-    // };
   }, [user]);
 
   // Handle message submit
@@ -39,6 +32,7 @@ const SendMessagesForm = () => {
       recipient: selectedUser._id,
       time: Date.now(),
       messageRoom,
+      isRead: false,
     };
     let messageData;
 

@@ -64,6 +64,7 @@ io.on('connection', (socket) => {
   userJoin(socket.userId, socket.username);
   console.log('Connected to socker.io server');
   // deleteAll(Message);
+  console.log(getUsers());
 
   // Send online users to everyone connected
   io.emit('onlineUsers', { connectedUsers: getUsers() });
@@ -110,8 +111,11 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     const user = userLeave(socket.userId);
 
+    console.log(user);
+
     if (user) {
-      console.log('first');
+      // const users = getUsers();
+      // console.log(users);
       // Send users to everyone connected
       io.emit('onlineUsers', { connectedUsers: getUsers() });
     }

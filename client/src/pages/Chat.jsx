@@ -37,11 +37,25 @@ function Chat() {
     });
   }, [user, setOnlineUsers, navigate, dispatch]);
 
+  useEffect(() => {
+    // Fetch notifications from backend when the user logs in
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch('/api/notifications?userId=' + user._id);
+        const data = await res.json();
+        dispatch({ type: 'SET_NOTIFICATIONS', payload: data });
+      } catch (error) {
+        console.log(error);
+        return [];
+      }
+    };
+
+    fetchNotifications();
+  }, [user, dispatch]);
+
   if (!user) return null;
 
-  return isLoading ? (
-    <Spinner loading={isLoading} />
-  ) : (
+  return (
     <div className="flex h-screen">
       <section className="bg-white w-1/3 flex left">
         <Sidebar />
