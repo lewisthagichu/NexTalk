@@ -47,15 +47,9 @@ const createText = async (messageData) => {
 const uploadFile = asyncHandler(async (req, res) => {
   if (!req.body) {
     res.status(400);
-    throw new Error('Empty message');
+    throw new Error('Message cannot be empty');
   }
   console.log(req.file);
-
-  // Check if multer detected a file size limit error
-  if (req.file && req.file.size === 0) {
-    res.status(400);
-    throw new Error('File size exceeds the limit (15 MB)');
-  }
 
   const { sender, recipient, time } = req.body;
 

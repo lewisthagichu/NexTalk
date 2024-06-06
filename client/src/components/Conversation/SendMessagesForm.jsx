@@ -50,6 +50,7 @@ const SendMessagesForm = () => {
       formData.append('text', null);
 
       messageData = { formData, messageRoom, textData: null };
+      console.log(formData);
 
       dispatch(uploadFile(formData));
     } else {
