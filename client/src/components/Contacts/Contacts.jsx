@@ -37,20 +37,18 @@ function Contacts() {
         }
       });
 
-      // Recipient gets message from socketIO server
-      socket.on('notification', ({ messageRoom, data }) => {
+      // Recipient gets notification from socketIO server
+      socket.on('notification', ({ messageRoom, notification }) => {
         let currentRoom = currentRoomRef.current;
-        if (currentRoom === messageRoom) {
-          const newData = { ...data, isRead: true };
-          setNotifications((prev) => [newData, ...prev]);
-        } else {
-          setNotifications((prev) => [data, ...prev]);
-        }
+        // if (currentRoom === messageRoom) {
+        //   const newData = { ...data, isRead: true };
+        //   setNotifications((prev) => [newData, ...prev]);
+        // } else {
+        //   setNotifications((prev) => [data, ...prev]);
+        // }
       });
     }
   }, [user, setNotifications, setOnlineUsers, dispatch]);
-
-  console.log(onlineUsers);
 
   // Joint room with selected user/contact
   function joinRoom(selectedContact) {

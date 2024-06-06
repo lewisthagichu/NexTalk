@@ -1,6 +1,7 @@
 import getSocket from '../../utils/socket';
 import { useEffect, useState, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
 import { ChatContext } from '../../context/ChatContext';
 import { IoAttachOutline, IoSendSharp } from 'react-icons/io5';
 import { uploadFile } from '../../features/messages/messagesSlice';
@@ -10,6 +11,7 @@ import { generateUniqueRoomName } from '../../utils/usersServices';
 const SendMessagesForm = () => {
   const { selectedUser } = useContext(ChatContext);
   const { user } = useSelector((state) => state.auth);
+  const { isError, serverMessage } = useSelector((state) => state.messages);
   const [socket, setSocket] = useState(null);
   const [newText, setNewText] = useState('');
   const dispatch = useDispatch();
@@ -79,6 +81,10 @@ const SendMessagesForm = () => {
     handleSubmit(null, file);
   }
 
+  if (isError) {
+    toast.error(serverMessage);
+  }
+
   return (
     <form onSubmit={handleSubmit} className="send-form">
       <label htmlFor="file">
@@ -88,7 +94,7 @@ const SendMessagesForm = () => {
         type="file"
         name="file"
         id="file"
-        accept=".jpeg, .png, .jpg"
+        accept=".jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.pdf,.mp3,.wav,.doc,.docx"
         onChange={sendFile}
       />
       <input

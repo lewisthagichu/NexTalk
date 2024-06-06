@@ -53,8 +53,9 @@ const login = asyncHandler(async (req, res) => {
 
   if (user && (await bycrypt.compare(password, user.password))) {
     const token = generateToken(user._id, user.username);
+    console.log(user._id);
     res.status(200).json({
-      _id: user.id,
+      _id: user._id,
       username,
       token,
     });

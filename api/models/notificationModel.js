@@ -5,7 +5,11 @@ const notificationSchema = mongoose.Schema(
   {
     sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    message: String,
+    messageId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Message',
+      required: true,
+    },
     isRead: { type: Boolean, default: false },
   },
   {

@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const Message = require('../models/messageModel');
+const Notification = require('../models/notificationModel');
 const EventEmitter = require('events');
 
 // Create an event emitter
@@ -13,6 +14,7 @@ const createText = async (messageData) => {
     }
 
     const { sender, recipient, time, messageRoom, text } = messageData;
+
     // Create a new text
     const newText = await Message.create({
       sender,
@@ -22,7 +24,18 @@ const createText = async (messageData) => {
       text,
       file: null,
     });
-    return newText;
+
+    // Create a notification referencing the message
+    const notification = await Notification.create({
+      sender,
+      recipient,
+      messageId: newText._id,
+    });
+
+    return {
+      newText,
+      notification,
+    };
   } catch (error) {
     throw error;
   }
@@ -36,24 +49,34 @@ const uploadFile = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('Empty message');
   }
+  console.log(req.file);
 
   // Check if multer detected a file size limit error
   if (req.file && req.file.size === 0) {
     res.status(400);
-    throw new Error('File size exceeds the limit (15 MB');
+    throw new Error('File size exceeds the limit (15 MB)');
   }
+
+  const { sender, recipient, time } = req.body;
 
   // Create a new file
   const newFile = await Message.create({
-    sender: req.body.sender,
-    recipient: req.body.recipient,
+    sender,
+    recipient,
     text: null,
     file: req.file.filename,
-    time: req.body.time,
+    time,
+  });
+
+  // Create a notification referencing the message
+  const notification = await Notification.create({
+    sender,
+    recipient,
+    messageId: newFile._id,
   });
 
   // Emit an event with the filename
-  emitter.emit('fileUploaded', newFile);
+  emitter.emit('fileUploaded', newFile, notification);
 
   // respond to request
   res.status(200).json(newFile);
@@ -64,7 +87,8 @@ const uploadFile = asyncHandler(async (req, res) => {
 // @access Private
 const getMessages = asyncHandler(async (req, res) => {
   const selectedUserId = req.params.id;
-  const myId = req.user.id;
+  const myId = req.user._id;
+
   const allMessages = await Message.find({
     sender: { $in: [selectedUserId, myId] },
     recipient: { $in: [selectedUserId, myId] },

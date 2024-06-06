@@ -10,7 +10,7 @@ const notificationsReducer = (state, action) => {
       return [action.payload, ...state];
     case 'MARK_READ':
       return state.map((notification) =>
-        notification.senderId === action.payload.senderId
+        notification.sender === action.payload.sender
           ? { ...notification, isRead: true }
           : notification
       );
@@ -28,5 +28,3 @@ export const NotificationsProvider = ({ children }) => {
     </NotificationsContext.Provider>
   );
 };
-
-export const useNotifications = () => useContext(NotificationsContext);

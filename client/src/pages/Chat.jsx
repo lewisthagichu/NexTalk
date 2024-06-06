@@ -1,22 +1,23 @@
 /* eslint-disable react/no-unknown-property */
-import { useEffect, useContext } from 'react';
+import { useEffect, useContext, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ChatContext } from '../context/ChatContext';
 import { getUsers } from '../features/auth/authSlice';
 import { updateOnlineUsers } from '../utils/usersServices';
+import { getNotifications } from '../utils/notificationServices';
 import getSocket from '../utils/socket';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Contacts from '../components/Contacts/Contacts';
 import Conversation from '../components/Conversation/Conversation';
-import Spinner from '../components/Spinner';
 
 function Chat() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [socket, setSocket] = useState(null);
 
   const { user } = useSelector((state) => state.auth);
-  const { isLoading } = useSelector((state) => state.messages);
   const { setOnlineUsers } = useContext(ChatContext);
 
   // Proceed with the rest of the component logic only if the user is authenticated
@@ -29,24 +30,32 @@ function Chat() {
     dispatch(getUsers());
 
     const socket = getSocket(user.token);
+    setSocket(socket);
 
     // Receive online users
     socket.on('onlineUsers', ({ connectedUsers }) => {
       const onlineUsers = updateOnlineUsers(connectedUsers, user._id);
       setOnlineUsers(onlineUsers);
     });
+
+    // Try reconnecting incase of a disconnect
+    // socket.on('disconnect', () => {
+    //   setTimeout(() => {
+    //     const socket = getSocket(user.token);
+    //     setSocket(socket);
+    //   }, 1000);
+    // });
   }, [user, setOnlineUsers, navigate, dispatch]);
 
   useEffect(() => {
     // Fetch notifications from backend when the user logs in
     const fetchNotifications = async () => {
       try {
-        const res = await fetch('/api/notifications?userId=' + user._id);
-        const data = await res.json();
-        dispatch({ type: 'SET_NOTIFICATIONS', payload: data });
+        const res = await getNotifications(user.token);
+        console.log(res);
+        // dispatch({ type: 'SET_NOTIFICATIONS', payload: data });
       } catch (error) {
         console.log(error);
-        return [];
       }
     };
 

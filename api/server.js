@@ -30,9 +30,9 @@ app.use(
 );
 
 // Increase limit for JSON payloads
-app.use(express.json({ limit: '15mb' }));
+app.use(express.json());
 // Increase limit for URL-encoded payloads
-app.use(express.urlencoded({ limit: '15mb', extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/users', require('./routes/userRoute'));
@@ -65,7 +65,7 @@ io.on('connection', (socket) => {
   userJoin(socket.userId, socket.username);
   console.log('Connected to socker.io server');
   // deleteAll(Message);
-  console.log(getUsers());
+  // console.log(getUsers());
 
   // Send online users to everyone connected
   io.emit('onlineUsers', { connectedUsers: getUsers() });
@@ -78,21 +78,30 @@ io.on('connection', (socket) => {
   socket.on('newMessage', async ({ formData, textData, messageRoom }) => {
     try {
       if (textData) {
-        const newText = await createText(textData);
+        const { newText, notification } = await createText(textData);
 
         socket.broadcast.to(messageRoom).emit('message', {
           messageRoom,
           newText,
         });
 
+        socket.broadcast
+          .to(messageRoom)
+          .emit('notification', { messageRoom, newText });
+
         console.log('message sent');
       }
 
-      emitter.on('fileUploaded', (newFile) => {
+      emitter.on('fileUploaded', (newFile, notification) => {
         socket.broadcast.to(messageRoom).emit('message', {
           messageRoom,
           newFile,
         });
+
+        socket.broadcast
+          .to(messageRoom)
+          .emit('notification', { messageRoom, notification });
+
         console.log('file sent');
       });
     } catch (error) {
@@ -100,17 +109,10 @@ io.on('connection', (socket) => {
     }
   });
 
-  // // Receive and transmit notifications
-  socket.on('newNotification', ({ messageRoom, data }) => {
-    socket.broadcast
-      .to(messageRoom)
-      .emit('notification', { messageRoom, data });
-  });
-
   socket.on('disconnect', () => {
     const user = userLeave(socket.userId);
 
-    console.log(user);
+    // console.log(user);
 
     if (user) {
       // const users = getUsers();

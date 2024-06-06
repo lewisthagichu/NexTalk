@@ -7,6 +7,7 @@ import Chat from './pages/Chat';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { ChatContextProvider } from './context/ChatContext';
+import { NotificationsProvider } from './context/NotificationsContext';
 
 function App() {
   axios.defaults.baseURL = 'http://localhost:5000';
@@ -14,14 +15,16 @@ function App() {
 
   return (
     <ChatContextProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Chat />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-        </Routes>
-      </Router>
-      <ToastContainer />
+      <NotificationsProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Chat />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+          </Routes>
+        </Router>
+        <ToastContainer />
+      </NotificationsProvider>
     </ChatContextProvider>
   );
 }

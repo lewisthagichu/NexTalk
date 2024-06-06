@@ -26,7 +26,19 @@ const upload = multer({
 // Check Files
 function checkFileType(file, cb) {
   // Define accepted file types
-  const acceptedFileTypes = ['jpg', 'jpeg', 'png', 'gif'];
+  const acceptedFileTypes = [
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'mp4',
+    'mov',
+    'avi',
+    'pdf',
+    'mp3',
+    'doc',
+    'docx',
+  ];
 
   // Extract file extension and convert to lowercase
   const extName = path.extname(file.originalname).toLowerCase();
@@ -38,6 +50,7 @@ function checkFileType(file, cb) {
   );
 
   if (isValidExtension && isValidMimeType) {
+    console.log('first');
     cb(null, true); // Pass validation
   } else {
     cb(new Error('Error: File format not supported'), false); // Fail validation
