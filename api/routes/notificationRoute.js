@@ -7,6 +7,6 @@ const {
 } = require('../controllers/notificationController');
 
 router.get('/', protect, getNotifications);
-router.get('/markRead', protect, markAsRead);
+router.put('/markRead/:id', protect, markAsRead);
 
 module.exports = router;

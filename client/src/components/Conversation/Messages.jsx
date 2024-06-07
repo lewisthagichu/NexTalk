@@ -1,22 +1,38 @@
-import { useRef, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { useSelector } from 'react-redux';
+import { useRef, useEffect, useContext } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { NotificationsContext } from '../../context/NotificationsContext';
 import { getMessages } from '../../features/messages/messagesSlice';
 import { uniqBy } from 'lodash';
 import Message from './Message';
+import { markAsRead } from '../../utils/notificationServices';
 
 function Messages({ selectedUser }) {
   const { user } = useSelector((state) => state.auth);
-  const { messages } = useSelector((state) => state.messages);
-  const [loading, setLoading] = useState(true);
-  const divRef = useRef();
-  const dispatch = useDispatch();
+  const { messages, isLoading } = useSelector((state) => state.messages);
 
-  // Get all messages when a contact is clicked
+  const { dispatch: notificationDispatch } = useContext(NotificationsContext);
+
+  const dispatch = useDispatch();
+  const divRef = useRef();
+
+  // Get all messages / read notifications when a contact is clicked
   useEffect(() => {
     dispatch(getMessages(selectedUser._id));
-    setLoading(false);
-  }, [selectedUser, dispatch]);
+    notificationDispatch({
+      type: 'MARK_READ',
+      payload: { sender: selectedUser._id },
+    });
+
+    const markRead = async () => {
+      try {
+        await markAsRead(selectedUser._id, user.token);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    markRead();
+  }, [selectedUser, dispatch, notificationDispatch, user]);
 
   // Auto scroll conversation container
   useEffect(() => {
@@ -26,9 +42,10 @@ function Messages({ selectedUser }) {
 
   // Remove duplicate messages
   const uniqueMessages = uniqBy(messages, 'time');
+
   return (
     <div ref={divRef} className="flex-grow overflow-y-scroll relative">
-      {!loading &&
+      {!isLoading &&
         uniqueMessages.map((message, index) => {
           const prevMsg = index > 0 ? messages[index - 1] : null;
           return (

@@ -9,20 +9,20 @@ const getNotifications = asyncHandler(async (req, res) => {
 
   // Fetch notifications and populate the message details
   const notifications = await Notification.find({
-    recipientId: myId,
+    recipient: myId,
     isRead: false,
-  }).populate('messageId', 'text file sender recipient');
+  }).populate('messageId', 'text file ');
 
   res.status(200).json(notifications);
 });
 
 // @desc Mark selected user notifications as read
-// @route GET /api/notifications
+// @route PUT /api/notifications/:id
 // @access Private
-
 const markAsRead = asyncHandler(async (req, res) => {
-  const { sender } = req.body;
+  const sender = req.params.id;
   const myId = req.user._id;
+
   await Notification.updateMany({ recipient: myId, sender }, { isRead: true });
 
   res.status(200).json({ success: true });

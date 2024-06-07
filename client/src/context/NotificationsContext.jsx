@@ -1,6 +1,6 @@
-import React, { createContext, useReducer, useContext } from 'react';
+import React, { createContext, useReducer } from 'react';
 
-const NotificationsContext = createContext();
+export const NotificationsContext = createContext();
 
 const notificationsReducer = (state, action) => {
   switch (action.type) {

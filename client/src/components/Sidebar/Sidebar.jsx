@@ -14,14 +14,12 @@ function Sidebar() {
   const navigate = useNavigate();
 
   const { user } = useSelector((state) => state.auth);
-  const { setNotifications, setSelectedUser, setOnlineUsers } =
-    useContext(ChatContext);
+  const { setSelectedUser, setOnlineUsers } = useContext(ChatContext);
 
   const handleLogout = () => {
     const socket = getSocket(user.token);
     socket.disconnect();
 
-    setNotifications([]);
     setSelectedUser(null);
     setOnlineUsers([]);
 

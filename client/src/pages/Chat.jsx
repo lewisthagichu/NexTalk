@@ -3,6 +3,7 @@ import { useEffect, useContext, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ChatContext } from '../context/ChatContext';
+import { NotificationsContext } from '../context/NotificationsContext';
 import { getUsers } from '../features/auth/authSlice';
 import { updateOnlineUsers } from '../utils/usersServices';
 import { getNotifications } from '../utils/notificationServices';
@@ -14,11 +15,11 @@ import Conversation from '../components/Conversation/Conversation';
 function Chat() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState(null);
 
   const { user } = useSelector((state) => state.auth);
   const { setOnlineUsers } = useContext(ChatContext);
+  const { dispatch: notificationDispatch } = useContext(NotificationsContext);
 
   // Proceed with the rest of the component logic only if the user is authenticated
   useEffect(() => {
@@ -52,15 +53,14 @@ function Chat() {
     const fetchNotifications = async () => {
       try {
         const res = await getNotifications(user.token);
-        console.log(res);
-        // dispatch({ type: 'SET_NOTIFICATIONS', payload: data });
+        notificationDispatch({ type: 'SET_NOTIFICATIONS', payload: res });
       } catch (error) {
         console.log(error);
       }
     };
 
-    // fetchNotifications();
-  }, [user, dispatch]);
+    fetchNotifications();
+  }, [user, dispatch, notificationDispatch]);
 
   if (!user) return null;
 

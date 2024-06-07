@@ -1,12 +1,11 @@
-import getSocket from '../../utils/socket';
 import { useEffect, useState, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { IoAttachOutline, IoSendSharp } from 'react-icons/io5';
 import { toast } from 'react-toastify';
 import { ChatContext } from '../../context/ChatContext';
-import { IoAttachOutline, IoSendSharp } from 'react-icons/io5';
-
 import { addMessage } from '../../features/messages/messagesSlice';
 import { generateUniqueRoomName } from '../../utils/usersServices';
+import getSocket from '../../utils/socket';
 
 const SendMessagesForm = () => {
   const { selectedUser } = useContext(ChatContext);
@@ -34,8 +33,6 @@ const SendMessagesForm = () => {
     const fileExtension = file.name.split('.').pop().toLowerCase();
 
     reader.onload = () => {
-      // const fileBuffer = event.target.result;
-
       const fileData = {
         fileType: file.type,
         fileBuffer: reader.result,
@@ -67,6 +64,7 @@ const SendMessagesForm = () => {
       messageRoom,
       _id: Date.now(),
     };
+
     let messageData;
 
     if (file) {
@@ -74,7 +72,6 @@ const SendMessagesForm = () => {
       const formData = { data, file, fileName };
 
       messageData = { formData, messageRoom, textData: null };
-      console.log(formData);
 
       dispatch(addMessage({ ...data, file: fileName }));
     } else {
@@ -93,9 +90,6 @@ const SendMessagesForm = () => {
 
     // Send message to server
     socket.emit('newMessage', messageData);
-
-    // Send notification to server
-    // socket.emit('newNotification', { messageRoom, data });
   }
 
   if (isError) {

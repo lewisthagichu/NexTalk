@@ -6,6 +6,7 @@ const http = require('http');
 const socketio = require('socket.io');
 const Message = require('./models/messageModel');
 const User = require('./models/userModel');
+const Notification = require('./models/notificationModel');
 const { deleteAll } = require('./utils/clearDB');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const { socketMiddleware } = require('./middleware/socketMiddleware');
@@ -84,11 +85,8 @@ io.on('connection', (socket) => {
         socket.broadcast.to(messageRoom).emit('message', {
           messageRoom,
           newText,
+          notification,
         });
-
-        socket.broadcast
-          .to(messageRoom)
-          .emit('notification', { messageRoom, newText });
 
         console.log('message sent');
       }
@@ -99,15 +97,13 @@ io.on('connection', (socket) => {
 
         await saveToFS(fileName, fileType, fileBuffer);
         const { newFile, notification } = await uploadFile(fileName, data);
+        console.log(newFile);
 
         socket.broadcast.to(messageRoom).emit('message', {
           messageRoom,
           newFile,
+          notification,
         });
-
-        // socket.broadcast
-        //   .to(messageRoom)
-        //   .emit('notification', { messageRoom, notification });
 
         // console.log('file sent');
       }
