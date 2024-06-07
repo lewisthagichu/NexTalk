@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { ChatContext } from '../../context/ChatContext';
 import { IoAttachOutline, IoSendSharp } from 'react-icons/io5';
-import { uploadFile } from '../../features/messages/messagesSlice';
+
 import { addMessage } from '../../features/messages/messagesSlice';
 import { generateUniqueRoomName } from '../../utils/usersServices';
 
@@ -21,9 +21,39 @@ const SendMessagesForm = () => {
     setSocket(socket);
   }, [user]);
 
+  // Send file
+  function sendFile(e) {
+    const file = e.target.files[0];
+
+    if (!file) {
+      console.log('No file selected');
+      return;
+    }
+
+    const reader = new FileReader();
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+
+    reader.onload = () => {
+      // const fileBuffer = event.target.result;
+
+      const fileData = {
+        fileType: file.type,
+        fileBuffer: reader.result,
+        fileExtension,
+      };
+      handleSubmit(null, fileData);
+    };
+
+    reader.onerror = (error) => {
+      console.error('File reading error:', error);
+    };
+
+    reader.readAsDataURL(file);
+  }
+
   // Handle message submit
   function handleSubmit(e, file = null) {
-    e?.preventDefault();
+    if (e) e.preventDefault();
 
     // Data accompaning each text
     const messageRoom = generateUniqueRoomName(user._id, selectedUser._id);
@@ -32,33 +62,26 @@ const SendMessagesForm = () => {
     const data = {
       sender: user._id,
       recipient: selectedUser._id,
+      text: null,
       time: Date.now(),
       messageRoom,
-      isRead: false,
+      _id: Date.now(),
     };
     let messageData;
 
     if (file) {
-      const formData = new FormData();
-      const { time, sender, recipient } = data;
-
-      formData.append('sender', sender);
-      formData.append('recipient', recipient);
-      formData.append('time', time);
-      formData.append('messageroom', messageRoom);
-      formData.append('file', file);
-      formData.append('text', null);
+      const fileName = `${data.time}.${file.fileExtension}`;
+      const formData = { data, file, fileName };
 
       messageData = { formData, messageRoom, textData: null };
       console.log(formData);
 
-      dispatch(uploadFile(formData));
+      dispatch(addMessage({ ...data, file: fileName }));
     } else {
       const textData = {
         ...data,
         text: newText,
         file: null,
-        _id: Date.now(),
       };
 
       messageData = { textData, messageRoom, formData: null };
@@ -72,14 +95,7 @@ const SendMessagesForm = () => {
     socket.emit('newMessage', messageData);
 
     // Send notification to server
-    socket.emit('newNotification', { messageRoom, data });
-  }
-
-  // Send file
-  function sendFile(e) {
-    const file = e.target.files[0];
-
-    handleSubmit(null, file);
+    // socket.emit('newNotification', { messageRoom, data });
   }
 
   if (isError) {

@@ -39,12 +39,12 @@ function Chat() {
     });
 
     // Try reconnecting incase of a disconnect
-    // socket.on('disconnect', () => {
-    //   setTimeout(() => {
-    //     const socket = getSocket(user.token);
-    //     setSocket(socket);
-    //   }, 1000);
-    // });
+    socket.on('disconnect', () => {
+      setTimeout(() => {
+        const socket = getSocket(user.token);
+        setSocket(socket);
+      }, 1000);
+    });
   }, [user, setOnlineUsers, navigate, dispatch]);
 
   useEffect(() => {

@@ -11,7 +11,8 @@ const { errorHandler } = require('./middleware/errorMiddleware');
 const { socketMiddleware } = require('./middleware/socketMiddleware');
 const { userJoin, getUsers, userLeave } = require('./utils/connectedUsers');
 const connectDB = require('./config/db');
-const { emitter, createText } = require('./controllers/messageController');
+const { createText, uploadFile } = require('./controllers/messageController');
+const { saveToFS } = require('./utils/saveToFS');
 
 // Connect to the database
 connectDB();
@@ -92,18 +93,24 @@ io.on('connection', (socket) => {
         console.log('message sent');
       }
 
-      emitter.on('fileUploaded', (newFile, notification) => {
+      if (formData) {
+        const { data, file, fileName } = formData;
+        const { fileType, fileBuffer } = file;
+
+        await saveToFS(fileName, fileType, fileBuffer);
+        const { newFile, notification } = await uploadFile(fileName, data);
+
         socket.broadcast.to(messageRoom).emit('message', {
           messageRoom,
           newFile,
         });
 
-        socket.broadcast
-          .to(messageRoom)
-          .emit('notification', { messageRoom, notification });
+        // socket.broadcast
+        //   .to(messageRoom)
+        //   .emit('notification', { messageRoom, notification });
 
-        console.log('file sent');
-      });
+        // console.log('file sent');
+      }
     } catch (error) {
       console.log(error);
     }
