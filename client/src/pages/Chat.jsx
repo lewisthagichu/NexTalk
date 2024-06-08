@@ -19,7 +19,8 @@ function Chat() {
 
   const { user } = useSelector((state) => state.auth);
   const { setOnlineUsers } = useChatContext();
-  const { dispatch: notificationDispatch } = useNotificationsContext();
+  const { notifications, dispatch: notificationDispatch } =
+    useNotificationsContext();
 
   // Proceed with the rest of the component logic only if the user is authenticated
   useEffect(() => {
@@ -39,6 +40,17 @@ function Chat() {
       setOnlineUsers(onlineUsers);
     });
 
+    // Receive notifications
+    socket.on('notification', (notification) => {
+      if (!notifications.includes(notification)) {
+        notificationDispatch({
+          type: 'ADD_NOTIFICATION',
+          payload: notification,
+        });
+      }
+      console.log('Got notification');
+    });
+
     // Try reconnecting incase of a disconnect
     socket.on('disconnect', () => {
       setTimeout(() => {
@@ -46,20 +58,29 @@ function Chat() {
         setSocket(socket);
       }, 1000);
     });
-  }, [user, setOnlineUsers, navigate, dispatch]);
+  }, [
+    user,
+    setOnlineUsers,
+    navigate,
+    dispatch,
+    notifications,
+    notificationDispatch,
+  ]);
 
   useEffect(() => {
-    // Fetch notifications from backend when the user logs in
-    const fetchNotifications = async () => {
-      try {
-        const res = await getNotifications(user.token);
-        notificationDispatch({ type: 'SET_NOTIFICATIONS', payload: res });
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    if (user) {
+      // Fetch notifications from backend when the user logs in
+      const fetchNotifications = async () => {
+        try {
+          const res = await getNotifications(user.token);
+          notificationDispatch({ type: 'SET_NOTIFICATIONS', payload: res });
+        } catch (error) {
+          console.log(error);
+        }
+      };
 
-    fetchNotifications();
+      fetchNotifications();
+    }
   }, [user, dispatch, notificationDispatch]);
 
   if (!user) return null;

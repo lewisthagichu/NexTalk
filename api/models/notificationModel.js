@@ -10,6 +10,7 @@ const notificationSchema = mongoose.Schema(
       ref: 'Message',
       required: true,
     },
+    content: { type: String },
     isRead: { type: Boolean, default: false },
   },
   {

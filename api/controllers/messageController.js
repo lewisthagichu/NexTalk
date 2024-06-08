@@ -26,6 +26,7 @@ const createText = async (messageData) => {
       sender,
       recipient,
       messageId: newText._id,
+      content: newText.text,
     });
 
     return {
@@ -57,6 +58,7 @@ const uploadFile = async (fileName, data) => {
       sender,
       recipient,
       messageId: newFile._id,
+      content: newFile.file,
     });
 
     return {

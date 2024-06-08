@@ -2,10 +2,11 @@
 const users = [];
 
 // Add user when they connecct
-const userJoin = (_id, username) => {
+const userJoin = (_id, username, id = null) => {
   const user = {
     _id,
     username,
+    id,
   };
 
   users.push(user);

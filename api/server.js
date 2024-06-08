@@ -62,12 +62,15 @@ io.use((socket, next) => {
   }
 });
 
+const connectedUsers = new Map();
 //  Set up a connection event for SocketIO
 io.on('connection', (socket) => {
   userJoin(socket.userId, socket.username);
   console.log('Connected to socker.io server');
-  // deleteAll(Message);
+  // deleteAll(Notification);
   // console.log(getUsers());
+
+  connectedUsers.set(socket.userId, socket);
 
   // Send online users to everyone connected
   io.emit('onlineUsers', { connectedUsers: getUsers() });
@@ -87,6 +90,14 @@ io.on('connection', (socket) => {
           newText,
           notification,
         });
+
+        const userSocket = connectedUsers.get(
+          notification.recipient.toString()
+        );
+
+        if (userSocket) {
+          userSocket.emit('notification', notification);
+        }
 
         console.log('message sent');
       }

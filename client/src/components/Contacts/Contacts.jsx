@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useChatContext } from '../../hooks/useChatContext';
-import { useNotificationsContext } from '../../hooks/useNotificationsContext';
 import { addMessage } from '../../features/messages/messagesSlice';
 import { generateUniqueRoomName } from '../../utils/usersServices';
 import Contact from './Contact';
@@ -13,7 +12,6 @@ function Contacts() {
   const currentRoomRef = useRef(currentRoom);
 
   const { setSelectedUser } = useChatContext();
-  const { dispatch: notificationDispatch } = useNotificationsContext();
 
   const { user, allUsers } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -31,15 +29,9 @@ function Contacts() {
       if (currentRoom === messageRoom) {
         const message = newFile ? newFile : newText;
         dispatch(addMessage(message));
-      } else {
-        console.log(notification);
-        notificationDispatch({
-          type: 'ADD_NOTIFICATION',
-          payload: notification,
-        });
       }
     });
-  }, [user, dispatch, notificationDispatch]);
+  }, [user, dispatch]);
 
   // Joint room with selected user/contact
   function joinRoom(selectedContact) {
