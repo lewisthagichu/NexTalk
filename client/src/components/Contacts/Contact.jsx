@@ -1,12 +1,20 @@
 import { useContext } from 'react';
 import { useSelector } from 'react-redux';
 import { ChatContext } from '../../context/ChatContext';
+import { NotificationsContext } from '../../context/NotificationsContext';
 
 import Avatar from '../Avatar';
 
 function Contact({ contact, joinRoom }) {
   const { selectedUser } = useContext(ChatContext);
+  const { notifications } = useContext(ChatContext);
   const { user } = useSelector((state) => state.auth);
+
+  const getUnreadCount = (userId) => {
+    return notifications.filter(
+      (notification) => notification.senderId === userId && !notification.isRead
+    ).length;
+  };
 
   const handleJoinRoom = (selectedContact) => {
     joinRoom(selectedContact);

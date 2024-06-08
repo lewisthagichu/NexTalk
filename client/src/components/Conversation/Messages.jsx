@@ -1,11 +1,10 @@
-import { useRef, useEffect, useContext, useCallback } from 'react';
+import { useRef, useEffect, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NotificationsContext } from '../../context/NotificationsContext';
 import { getMessages } from '../../features/messages/messagesSlice';
 import { uniqBy } from 'lodash';
 import Message from './Message';
 import { markAsRead } from '../../utils/notificationServices';
-import { getNotifications } from '../../utils/notificationServices';
 
 function Messages({ selectedUser }) {
   const { user } = useSelector((state) => state.auth);

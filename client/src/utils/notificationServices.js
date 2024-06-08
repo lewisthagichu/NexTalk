@@ -40,7 +40,3 @@ export const markAsRead = async (selectedUserId, token) => {
     console.log(error);
   }
 };
-
-export const getUnreadNotifications = (notifications) => {
-  return notifications.filter((n) => n.isRead === false);
-};

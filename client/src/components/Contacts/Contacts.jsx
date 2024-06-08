@@ -1,4 +1,4 @@
-import { useState, useContext, useCallback, useEffect, useRef } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { ChatContext } from '../../context/ChatContext';
 import { NotificationsContext } from '../../context/NotificationsContext';
