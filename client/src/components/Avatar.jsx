@@ -1,12 +1,12 @@
-import { useState, useEffect, useContext } from 'react';
-import { ChatContext } from '../context/ChatContext';
+import { useState } from 'react';
+import { useChatContext } from '../hooks/useChatContext';
 import ProfileModal from './modals/ProfileModal';
 import defaultPhoto from '../assets/profile.png';
 
 function Avatar({ contact, profileExists }) {
   const [modal, setModal] = useState(false);
   const [isOnline, setIsOnline] = useState(null);
-  const { onlineUsers } = useContext(ChatContext);
+  const { onlineUsers } = useChatContext();
 
   let userIdBase10;
   let colorIndex;

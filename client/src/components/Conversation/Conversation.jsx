@@ -1,12 +1,11 @@
-import { useContext } from 'react';
-import { ChatContext } from '../../context/ChatContext';
+import { useChatContext } from '../../hooks/useChatContext';
 import { FaArrowLeftLong } from 'react-icons/fa6';
 import UserHeader from './UserHeader';
 import Messages from './Messages';
 import SendMessagesForm from './SendMessagesForm';
 
 function Conversation() {
-  const { selectedUser, onlineUsers } = useContext(ChatContext);
+  const { selectedUser, onlineUsers } = useChatContext();
   return (
     <div className="flex flex-col flex-grow">
       {!selectedUser && (

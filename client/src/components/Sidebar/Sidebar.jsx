@@ -1,12 +1,11 @@
-import Avatar from '../Avatar';
-import { useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ChatContext } from '../../context/ChatContext';
 import { useNavigate } from 'react-router-dom';
+import { useChatContext } from '../../hooks/useChatContext';
 import { MdGroupAdd } from 'react-icons/md';
 import { BiLogOut } from 'react-icons/bi';
 import { IoChatboxEllipses } from 'react-icons/io5';
 import { reset, logout } from '../../features/auth/authSlice';
+import Avatar from '../Avatar';
 import getSocket from '../../utils/socket';
 
 function Sidebar() {
@@ -14,7 +13,7 @@ function Sidebar() {
   const navigate = useNavigate();
 
   const { user } = useSelector((state) => state.auth);
-  const { setSelectedUser, setOnlineUsers } = useContext(ChatContext);
+  const { setSelectedUser, setOnlineUsers } = useChatContext();
 
   const handleLogout = () => {
     const socket = getSocket(user.token);

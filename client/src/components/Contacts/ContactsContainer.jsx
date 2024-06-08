@@ -1,18 +1,18 @@
-import { useEffect, useContext, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { ChatContext } from '../../context/ChatContext';
-import { NotificationsContext } from '../../context/NotificationsContext';
 import { getNotifications } from '../../utils/notificationServices';
 import { updateOnlineUsers } from '../../utils/usersServices';
 import Contacts from './Contacts';
 import Footer from '../Footer';
 import SearchContactsForm from './SearchContactsForm';
+import { useChatContext } from '../../hooks/useChatContext';
+import { useNotificationsContext } from '../../hooks/useNotificationsContext';
 
 function ContactsContainer() {
   const { user } = useSelector((state) => state.auth);
 
-  const { onlineUsers, setOnlineUsers, selectedUser } = useContext(ChatContext);
-  const { dispatch: notificationDispatch } = useContext(NotificationsContext);
+  const { onlineUsers, setOnlineUsers, selectedUser } = useChatContext();
+  const { dispatch: notificationDispatch } = useNotificationsContext();
 
   const fetchNotifications = useCallback(async () => {
     try {

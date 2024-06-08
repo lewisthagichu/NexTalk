@@ -1,14 +1,14 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useChatContext } from '../../hooks/useChatContext';
 import { IoAttachOutline, IoSendSharp } from 'react-icons/io5';
 import { toast } from 'react-toastify';
-import { ChatContext } from '../../context/ChatContext';
 import { addMessage } from '../../features/messages/messagesSlice';
 import { generateUniqueRoomName } from '../../utils/usersServices';
 import getSocket from '../../utils/socket';
 
 const SendMessagesForm = () => {
-  const { selectedUser } = useContext(ChatContext);
+  const { selectedUser } = useChatContext();
   const { user } = useSelector((state) => state.auth);
   const { isError, serverMessage } = useSelector((state) => state.messages);
   const [socket, setSocket] = useState(null);

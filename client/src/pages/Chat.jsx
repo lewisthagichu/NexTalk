@@ -1,12 +1,12 @@
 /* eslint-disable react/no-unknown-property */
-import { useEffect, useContext, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { ChatContext } from '../context/ChatContext';
-import { NotificationsContext } from '../context/NotificationsContext';
+import { useChatContext } from '../hooks/useChatContext';
+import { useNotificationsContext } from '../hooks/useNotificationsContext';
+import { getNotifications } from '../utils/notificationServices';
 import { getUsers } from '../features/auth/authSlice';
 import { updateOnlineUsers } from '../utils/usersServices';
-import { getNotifications } from '../utils/notificationServices';
 import getSocket from '../utils/socket';
 import Sidebar from '../components/Sidebar/Sidebar';
 import ContactsContainer from '../components/Contacts/ContactsContainer';
@@ -18,8 +18,8 @@ function Chat() {
   const [socket, setSocket] = useState(null);
 
   const { user } = useSelector((state) => state.auth);
-  const { setOnlineUsers } = useContext(ChatContext);
-  const { dispatch: notificationDispatch } = useContext(NotificationsContext);
+  const { setOnlineUsers } = useChatContext();
+  const { dispatch: notificationDispatch } = useNotificationsContext();
 
   // Proceed with the rest of the component logic only if the user is authenticated
   useEffect(() => {

@@ -1,7 +1,7 @@
-import { useState, useContext, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { ChatContext } from '../../context/ChatContext';
-import { NotificationsContext } from '../../context/NotificationsContext';
+import { useChatContext } from '../../hooks/useChatContext';
+import { useNotificationsContext } from '../../hooks/useNotificationsContext';
 import { addMessage } from '../../features/messages/messagesSlice';
 import { generateUniqueRoomName } from '../../utils/usersServices';
 import Contact from './Contact';
@@ -12,8 +12,8 @@ function Contacts() {
   const [currentRoom, setCurrentRoom] = useState(null);
   const currentRoomRef = useRef(currentRoom);
 
-  const { setSelectedUser } = useContext(ChatContext);
-  const { dispatch: notificationDispatch } = useContext(NotificationsContext);
+  const { setSelectedUser } = useChatContext();
+  const { dispatch: notificationDispatch } = useNotificationsContext();
 
   const { user, allUsers } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
