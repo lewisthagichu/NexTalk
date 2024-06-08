@@ -1,13 +1,10 @@
-import { useEffect, useState, useContext, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState, useContext, useCallback, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { ChatContext } from '../../context/ChatContext';
 import { NotificationsContext } from '../../context/NotificationsContext';
 import { addMessage } from '../../features/messages/messagesSlice';
 import { generateUniqueRoomName } from '../../utils/usersServices';
-import { updateOnlineUsers } from '../../utils/usersServices';
 import Contact from './Contact';
-import Footer from '../Footer';
-import SearchContactsForm from './SearchContactsForm';
 import getSocket from '../../utils/socket';
 
 function Contacts() {
@@ -15,52 +12,34 @@ function Contacts() {
   const [currentRoom, setCurrentRoom] = useState(null);
   const currentRoomRef = useRef(currentRoom);
 
-  const { allUsers, user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
-
-  const { onlineUsers, setOnlineUsers, setSelectedUser } =
-    useContext(ChatContext);
+  const { setSelectedUser } = useContext(ChatContext);
   const { dispatch: notificationDispatch } = useContext(NotificationsContext);
 
+  const { user, allUsers } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    if (user) {
-      const socket = getSocket(user.token);
-      setSocket(socket);
+    const socket = getSocket(user.token);
+    setSocket(socket);
 
-      // Recipient gets message from socketIO server
-      socket.on(
-        'message',
-        ({ messageRoom, notification, newText, newFile }) => {
-          let currentRoom = currentRoomRef.current;
-          // console.log(`The room the message was received is: ${currentRoom}`);
-          // console.log(`The messageroom received is ${messageRoom}`);
+    // Recipient gets message from socketIO server
+    socket.on('message', ({ messageRoom, notification, newText, newFile }) => {
+      let currentRoom = currentRoomRef.current;
+      // console.log(`The room the message was received is: ${currentRoom}`);
+      // console.log(`The messageroom received is ${messageRoom}`);
 
-          if (currentRoom === messageRoom) {
-            console.log('first');
-            const message = newFile ? newFile : newText;
-            dispatch(addMessage(message));
-          } else {
-            console.log(notification);
-            notificationDispatch({
-              type: 'ADD_NOTIFICATION',
-              payload: notification,
-            });
-          }
-        }
-      );
-
-      // Recipient gets notification from socketIO server
-      // socket.on('notification', ({ messageRoom, notification }) => {
-      //   let currentRoom = currentRoomRef.current;
-      //   // if (currentRoom === messageRoom) {
-      //   //   const newData = { ...data, isRead: true };
-      //   //   setNotifications((prev) => [newData, ...prev]);
-      //   // } else {
-      //   //   setNotifications((prev) => [data, ...prev]);
-      //   // }
-      // });
-    }
-  }, [user, setOnlineUsers, dispatch, notificationDispatch]);
+      if (currentRoom === messageRoom) {
+        const message = newFile ? newFile : newText;
+        dispatch(addMessage(message));
+      } else {
+        console.log(notification);
+        notificationDispatch({
+          type: 'ADD_NOTIFICATION',
+          payload: notification,
+        });
+      }
+    });
+  }, [user, dispatch, notificationDispatch]);
 
   // Joint room with selected user/contact
   function joinRoom(selectedContact) {
@@ -77,14 +56,10 @@ function Contacts() {
   }
 
   return (
-    <div className="contacts-container">
-      <SearchContactsForm />
-      <div className="contacts">
-        {allUsers.map((user) => (
-          <Contact key={user._id} contact={user} joinRoom={joinRoom} />
-        ))}
-      </div>
-      <Footer />
+    <div className="contacts">
+      {allUsers.map((user) => (
+        <Contact key={user._id} contact={user} joinRoom={joinRoom} />
+      ))}
     </div>
   );
 }

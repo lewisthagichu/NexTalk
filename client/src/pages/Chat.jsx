@@ -9,7 +9,7 @@ import { updateOnlineUsers } from '../utils/usersServices';
 import { getNotifications } from '../utils/notificationServices';
 import getSocket from '../utils/socket';
 import Sidebar from '../components/Sidebar/Sidebar';
-import Contacts from '../components/Contacts/Contacts';
+import ContactsContainer from '../components/Contacts/ContactsContainer';
 import Conversation from '../components/Conversation/Conversation';
 
 function Chat() {
@@ -68,7 +68,7 @@ function Chat() {
     <div className="flex h-screen">
       <section className="bg-white w-1/3 flex left">
         <Sidebar />
-        <Contacts />
+        <ContactsContainer />
       </section>
 
       <section className="bg-blue-100 w-2/3 flex flex-col right">
