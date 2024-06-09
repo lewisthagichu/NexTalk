@@ -7,15 +7,19 @@ import { useNotificationsContext } from '../hooks/useNotificationsContext';
 import { getNotifications } from '../utils/notificationServices';
 import { getUsers } from '../features/auth/authSlice';
 import { updateOnlineUsers } from '../utils/usersServices';
+import { toast } from 'react-toastify';
 import getSocket from '../utils/socket';
 import Sidebar from '../components/Sidebar/Sidebar';
 import ContactsContainer from '../components/Contacts/ContactsContainer';
 import Conversation from '../components/Conversation/Conversation';
+import Spinner from '../components/Spinner';
 
 function Chat() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [socket, setSocket] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const { user } = useSelector((state) => state.auth);
   const { setOnlineUsers } = useChatContext();
@@ -74,18 +78,22 @@ function Chat() {
         try {
           const res = await getNotifications(user.token);
           notificationDispatch({ type: 'SET_NOTIFICATIONS', payload: res });
+          setLoading(false);
         } catch (error) {
           console.log(error);
+          toast.error('Something went wrong');
         }
       };
 
       fetchNotifications();
     }
-  }, [user, dispatch, notificationDispatch]);
+  }, [user, notificationDispatch]);
 
   if (!user) return null;
 
-  return (
+  return loading ? (
+    <Spinner loading={loading} />
+  ) : (
     <div className="flex h-screen">
       <section className="bg-white w-1/3 flex left">
         <Sidebar />

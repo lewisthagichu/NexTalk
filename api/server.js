@@ -7,13 +7,14 @@ const socketio = require('socket.io');
 const Message = require('./models/messageModel');
 const User = require('./models/userModel');
 const Notification = require('./models/notificationModel');
+const connectDB = require('./config/db');
 const { deleteAll } = require('./utils/clearDB');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const { socketMiddleware } = require('./middleware/socketMiddleware');
 const { userJoin, getUsers, userLeave } = require('./utils/connectedUsers');
-const connectDB = require('./config/db');
 const { createText, uploadFile } = require('./controllers/messageController');
 const { saveToFS } = require('./utils/saveToFS');
+const { sendNotificationToUsers } = require('./utils/sendNotificationsToUsers');
 
 // Connect to the database
 connectDB();
@@ -91,15 +92,7 @@ io.on('connection', (socket) => {
           notification,
         });
 
-        const userSocket = connectedUsers.get(
-          notification.recipient.toString()
-        );
-
-        if (userSocket) {
-          userSocket.emit('notification', notification);
-        }
-
-        console.log('message sent');
+        sendNotificationToUsers(notification, connectedUsers);
       }
 
       if (formData) {
@@ -115,6 +108,8 @@ io.on('connection', (socket) => {
           newFile,
           notification,
         });
+
+        sendNotificationToUsers(notification, connectedUsers);
 
         // console.log('file sent');
       }
