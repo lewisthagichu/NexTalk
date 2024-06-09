@@ -68,7 +68,7 @@ const connectedUsers = new Map();
 io.on('connection', (socket) => {
   userJoin(socket.userId, socket.username);
   console.log('Connected to socker.io server');
-  // deleteAll(Notification);
+  // deleteAll(Message);
   // console.log(getUsers());
 
   connectedUsers.set(socket.userId, socket);

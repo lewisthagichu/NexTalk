@@ -9,9 +9,8 @@ const getNotifications = asyncHandler(async (req, res) => {
 
   // Fetch notifications and populate the message details
   const notifications = await Notification.find({
-    recipient: myId,
-    isRead: false,
-  }).populate('messageId', 'text file ');
+    $or: [{ recipient: myId }, { sender: myId }],
+  }).populate('messageId', '_id');
 
   res.status(200).json(notifications);
 });

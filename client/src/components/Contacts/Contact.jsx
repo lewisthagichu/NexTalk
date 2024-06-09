@@ -1,10 +1,10 @@
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useChatContext } from '../../hooks/useChatContext';
-import Avatar from '../Avatar';
-import { useEffect, useState } from 'react';
-import { uniqBy } from 'lodash';
 import { useNotificationsContext } from '../../hooks/useNotificationsContext';
 import { formatNotificationDate } from '../../utils/extractTime';
+import { uniqBy } from 'lodash';
+import Avatar from '../Avatar';
 
 function Contact({ contact, joinRoom }) {
   const [unreadCount, setUnreadCount] = useState(0);
@@ -22,9 +22,9 @@ function Contact({ contact, joinRoom }) {
       const contactNotifications = notifications.filter(
         (notification) =>
           (notification.sender === contact._id ||
-            notification.receiver === contact._id) &&
+            notification.recipient === contact._id) &&
           (notification.sender === user._id ||
-            notification.receiver === user._id)
+            notification.recipient === user._id)
       );
 
       const uniqueNotifications = uniqBy(contactNotifications, '_id');
@@ -37,7 +37,7 @@ function Contact({ contact, joinRoom }) {
         const latestNotification = sortedNotifications[0];
         setLatestMsgContent(latestNotification.content);
         setLatestMsgTime(formatNotificationDate(latestNotification.createdAt));
-        setIsMine(latestNotification.receiver === user._id); // Check if the latest message was sent by the user
+        setIsMine(latestNotification.recipient === user._id);
       } else {
         setLatestMsgContent('');
         setLatestMsgTime('');
@@ -45,15 +45,13 @@ function Contact({ contact, joinRoom }) {
       }
 
       setUnreadCount(
-        contactNotifications.filter(
+        uniqueNotifications.filter(
           (notification) =>
             !notification.isRead && notification.sender === contact._id
         ).length
       );
     }
   }, [notifications, contact, user]);
-
-  console.log(notifications);
 
   const handleJoinRoom = () => {
     joinRoom(contact);
@@ -78,8 +76,8 @@ function Contact({ contact, joinRoom }) {
       </div>
       <div className="contact-right">
         <p className="text-time">{latestMsgTime}</p>
-        <div>
-          <small>{unreadCount > 0 ? unreadCount : 0}</small>
+        <div className={unreadCount > 0 ? 'notification' : 'hide'}>
+          <small>{unreadCount > 0 ? unreadCount : ''}</small>
         </div>
       </div>
     </div>
