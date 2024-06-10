@@ -13,7 +13,8 @@ function Contact({ contact, joinRoom }) {
   const [isMine, setIsMine] = useState(false);
 
   const { selectedUser } = useChatContext();
-  const { notifications } = useNotificationsContext();
+  const { notifications, dispatch: notificationDispatch } =
+    useNotificationsContext();
   const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -76,9 +77,11 @@ function Contact({ contact, joinRoom }) {
       </div>
       <div className="contact-right">
         <p className="text-time">{latestMsgTime}</p>
-        <div className={unreadCount > 0 ? 'notification' : 'hide'}>
-          <small>{unreadCount > 0 ? unreadCount : ''}</small>
-        </div>
+        {selectedUser?._id !== contact._id && (
+          <div className={unreadCount > 0 ? 'notification' : 'hide'}>
+            <small>{unreadCount || ''}</small>
+          </div>
+        )}
       </div>
     </div>
   );

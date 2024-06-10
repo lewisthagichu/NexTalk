@@ -55,6 +55,12 @@ function Chat() {
       console.log('Got notification');
     });
 
+    // Receive errors
+    socket.on('errorMessage', ({ message }) => {
+      console.log(message);
+      toast.error('Something went wrong');
+    });
+
     // Try reconnecting incase of a disconnect
     socket.on('disconnect', () => {
       setTimeout(() => {

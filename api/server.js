@@ -64,6 +64,7 @@ io.use((socket, next) => {
 });
 
 const connectedUsers = new Map();
+
 //  Set up a connection event for SocketIO
 io.on('connection', (socket) => {
   userJoin(socket.userId, socket.username);
@@ -114,6 +115,7 @@ io.on('connection', (socket) => {
         // console.log('file sent');
       }
     } catch (error) {
+      socket.emit('errorMessage', { message: error.message });
       console.log(error);
     }
   });
@@ -128,6 +130,7 @@ io.on('connection', (socket) => {
       // console.log(users);
       // Send users to everyone connected
       io.emit('onlineUsers', { connectedUsers: getUsers() });
+      connectedUsers.delete(socket.userId);
     }
   });
 });
