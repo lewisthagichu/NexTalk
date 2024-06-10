@@ -5,16 +5,17 @@ import { useNotificationsContext } from '../../hooks/useNotificationsContext';
 import { formatNotificationDate } from '../../utils/extractTime';
 import { uniqBy } from 'lodash';
 import Avatar from '../Avatar';
+import ContactNotificationAndTime from './ContactNotificationAndTime';
 
 function Contact({ contact, joinRoom }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [latestMsgContent, setLatestMsgContent] = useState('');
   const [latestMsgTime, setLatestMsgTime] = useState('');
   const [isMine, setIsMine] = useState(false);
+  const [contactNotifications, setContactNotifications] = useState([]);
 
   const { selectedUser } = useChatContext();
-  const { notifications, dispatch: notificationDispatch } =
-    useNotificationsContext();
+  const { notifications } = useNotificationsContext();
   const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ function Contact({ contact, joinRoom }) {
       );
 
       const uniqueNotifications = uniqBy(contactNotifications, '_id');
+      setContactNotifications(uniqueNotifications);
 
       if (uniqueNotifications.length > 0) {
         // Sort by date to find the latest notification
@@ -75,14 +77,12 @@ function Contact({ contact, joinRoom }) {
           </p>
         </div>
       </div>
-      <div className="contact-right">
-        <p className="text-time">{latestMsgTime}</p>
-        {selectedUser?._id !== contact._id && (
-          <div className={unreadCount > 0 ? 'notification' : 'hide'}>
-            <small>{unreadCount || ''}</small>
-          </div>
-        )}
-      </div>
+      <ContactNotificationAndTime
+        contact={contact}
+        unreadCount={unreadCount}
+        latestMsgTime={latestMsgTime}
+        contactNotifications={contactNotifications}
+      />
     </div>
   );
 }

@@ -37,6 +37,6 @@ export const markAsRead = async (selectedUserId, token) => {
 
     return response.data;
   } catch (error) {
-    console.log(error);
+    throw Error(error);
   }
 };
