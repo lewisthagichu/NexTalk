@@ -1,3 +1,4 @@
+import styles from './sidebar.module.scss';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useChatContext } from '../../hooks/useChatContext';
@@ -27,22 +28,23 @@ function Sidebar() {
     navigate('/');
   };
   return (
-    <aside>
-      <div className="container">
-        <div className="profile">
+    <aside className={styles.container}>
+      <div className={styles.wrapper}>
+        <div className={styles.profile}>
           <Avatar contact={user} profileExists={false} />
         </div>
-        <nav>
-          <div className="icons selected">
-            <IoChatboxEllipses color="777A7E" size={28} />
+
+        <div className={styles.nav}>
+          <div className={`${styles.icon} ${styles.selected}`}>
+            <IoChatboxEllipses />
           </div>
-          <div className="icons">
-            <MdGroupAdd color="777A7E" size={28} />
+          <div className={styles.icon}>
+            <MdGroupAdd />
           </div>
-        </nav>
+        </div>
       </div>
-      <div onClick={handleLogout} className="icons">
-        <BiLogOut color="777A7E" size={28} />
+      <div onClick={handleLogout} className={styles.icon}>
+        <BiLogOut />
       </div>
     </aside>
   );
