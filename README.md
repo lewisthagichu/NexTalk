@@ -3,7 +3,12 @@
 A real-time chat application built with React, Redux, Node.js, Express, and Socket.IO.
 
 ## Demo
-![Chat](https://github.com/lewisthagichu/NexTalk/blob/main/client/public/homeVideo.mp4)
+[Watch the demo video](https://github.com/lewisthagichu/NexTalk/blob/main/client/public/homeVideo.mp4)
+<div>    
+<img src="https://raw.githubusercontent.com/lewisthagichu/NexTalk/refs/heads/main/client/public/mob1.webp" alt="Screenshot 1" width="200"/>
+<img src="https://raw.githubusercontent.com/lewisthagichu/NexTalk/refs/heads/main/client/public/mob2.webp" alt="Screenshot 2" width="200"/>
+<img src="https://raw.githubusercontent.com/lewisthagichu/NexTalk/refs/heads/main/client/public/mob3.webp" alt="Screenshot 3" width="200"/>
+</div>
 
 ## Features
 
