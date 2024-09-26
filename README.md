@@ -2,6 +2,9 @@
 
 A real-time chat application built with React, Redux, Node.js, Express, and Socket.IO.
 
+## Demo
+![Chat](https://github.com/lewisthagichu/NexTalk/blob/main/client/public/homeVideo.mp4)
+
 ## Features
 
 - Real-time messaging
